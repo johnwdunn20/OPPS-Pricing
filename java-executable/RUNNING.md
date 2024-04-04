@@ -25,6 +25,19 @@ You can then use the following commands to start the pricer application.
          -Ddw.server.applicationConnectors\[0\].port=8080 \
          -jar $JAR_LOCATION server
     ```
+
+- With values filled in for my computer
+    ```shell
+    export PRICER_YEARS=2019,2020,2021,2022,2023,2024
+    export JAR_LOCATION=/Users/johndunn/Documents/Coding/projects/opps-pricing/java-executable/opps-pricer-application-2.4.0.jar
+
+    export COLUMNS=100
+
+    java --add-opens java.base/java.lang=ALL-UNNAMED \
+         -Ddw.supportedYears=$PRICER_YEARS \
+         -Ddw.server.applicationConnectors\[0\].port=8080 \
+         -jar $JAR_LOCATION server
+    ```
 - For Windows (Windows 10 and later)
 
     ```shell
