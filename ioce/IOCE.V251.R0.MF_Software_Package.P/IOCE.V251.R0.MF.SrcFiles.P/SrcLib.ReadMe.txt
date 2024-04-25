@@ -1,0 +1,13 @@
+Integrated OCE/APC Version 25.1 R0 GEN. Release Java z/OS Source
+
+This Electronic Delivery includes all the members of the source library. 
+ 
+The members are listed in table 9 of the install guide.
+
+
+
+See Chapter 2 in the Install guide for more information.
+
+
+
+Note: The mainframe software files do not meet accessibility standards for section 508 compliance.

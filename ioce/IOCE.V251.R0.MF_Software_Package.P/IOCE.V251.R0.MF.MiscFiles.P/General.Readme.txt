@@ -1,0 +1,20 @@
+Integrated OCE/APC Version 25.1 R0 GEN. Release Java z/OS JCL & Misc. files
+
+This Zip File includes:
+Sample JCL Members for Batch Installation from the Electronic Download File. All files have Lrecl 80. 
+
+	 BLDPDSE	Sample JCL used for electronic download
+	 COBTEST 	Run Sample Cobol Program by linking and executing Cobtest Module
+	 COBTSTGO	Run Sample Cobol program by executing Cobtest Load Module	
+         INSTLCNT	Install Test Data Base Record Counts
+
+
+Testdb			Lrecl 300. 44527 records, 2880 Claims, 0 Claims with Mismatches.		
+
+
+
+See Chapter 2 in the Install guide for more information.
+
+
+Note: The mainframe software files do not meet accessibility standards for section 508 compliance.
+

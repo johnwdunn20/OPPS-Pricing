@@ -1,0 +1,32 @@
+//JOB CARD FOR YOUR INSTALLATION                                        00002800
+//         NOTIFY=&SYSUID                                               00002900
+//* *********************************************************           00003100
+//* APRIL    2024                                                       00004016
+//* THIS JOB PROCESSES THE RECORDS IN THE INFILE AND TESTS              00005000
+//* THE CMS IOCE V25.1 R0 JAVA TEST DATA BASE                           00006016
+//*                                                                     00007000
+//* *********************************************************           00020000
+//*RUNIT    PROC                                                        00030000
+//GO       EXEC  PGM=COBTEST,                                           00040000
+//  PARM='/ENVAR("_CEE_ENVFILE=/YOURPATH/IOCE/V251R0/IOCEENV251R0")'    00041116
+//* JAVAOUT AND JAVAERR CAN BE UNCOMMENTED IF NEEDED.                   00041208
+//*JAVAOUT  DD PATH='/YOURPATH/IOCE/V251R0/javaout',                    00041616
+//*  PATHOPTS=(OWRONLY,OCREAT,OTRUNC),                                  00041704
+//*  PATHMODE=(SIRUSR,SIWUSR,SIRGRP,SIWGRP,SIROTH,SIWOTH)               00041804
+//*JAVAERR  DD PATH='/YOURPATH/IOCE/V251R0/javaerr',                    00041916
+//*  PATHOPTS=(OWRONLY,OCREAT,OTRUNC),                                  00042008
+//*  PATHMODE=(SIRUSR,SIWUSR,SIRGRP,SIWGRP,SIROTH,SIWOTH)               00043008
+//STEPLIB  DD  DSN=SYS1.SCEERUN,DISP=SHR                                00050000
+//         DD  DSN=SYS1.SCEERUN2,DISP=SHR                               00050100
+//         DD  DSN=YOURID.IOCE.V251R0.JAVA.LOADLIB,DISP=SHR             00050216
+//* IF YOU DON'T WANT THE OUTPUT DISPLAYS TO BE IN THE PRTFLE,          00060600
+//* COMMENT THE PRTFILE DD SYSOUT=* AND IT WILL ROUTE TO LOG FILE       00060700
+//SYSPRINT DD  SYSOUT=*                                                 00060800
+//SYSOUT   DD  SYSOUT=*                                                 00060900
+//PRTFILE  DD  SYSOUT=*                                                 00061000
+//CEEDUMP  DD  SYSOUT=*                                                 00061100
+//CEEOPTS  DD  *                                                        00061200
+  XPLINK(ON),POSIX(ON)                                                  00061308
+//SYSUDUMP DD  SYSOUT=*                                                 00061500
+//INUSER   DD  DSN=YOURID.IOCE.V251R0.JAVA.TESTDB,DISP=OLD              00063916
+/*                                                                      00130700

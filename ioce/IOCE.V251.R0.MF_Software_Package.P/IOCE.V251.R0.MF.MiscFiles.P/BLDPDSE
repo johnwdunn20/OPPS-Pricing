@@ -1,0 +1,10 @@
+//JOB CARD FOR YOUR INSTALLATION                                        00010000
+//* *****************************************************************   00030000
+//* *** RECEIVE FTP'D SEQUENTIAL FILES TO CREATE LOAD LIBRARY PDSE***   00031013
+//* *****************************************************************   00032000
+//BLDLOAD EXEC PGM=IKJEFT01                                             00033000
+//SYSTSPRT DD SYSOUT=*                                                  00040000
+//SYSTSIN  DD *                                                         00110000
+  RECEIVE INDATASET('YOURID.IOCE.V251R0.JAVA.FTPLOAD')                  00111023
+          DATASET('YOURID.IOCE.V251R0.JAVA.LOADLIB')                    00111123
+/*                                                                      00300000

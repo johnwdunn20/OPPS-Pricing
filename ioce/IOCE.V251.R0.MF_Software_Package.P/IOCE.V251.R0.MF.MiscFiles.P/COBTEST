@@ -1,0 +1,67 @@
+//JOB CARD FOR YOUR INSTALLATION                                        00002800
+//         NOTIFY=&SYSUID                                               00011000
+/*JOBPARM LINES=250                                                     00012016
+//* *********************************************************           00020000
+//* THIS JOB IS USED TO COMPILE, LINK AND EXECUTE THE                   00030000
+//* IOCE V25.1 R0 Java COBTEST COBOL PGM. A LOAD MODULE IS CREATED      00040016
+//* AS A TEMPORARY DATA SET.                                            00050000
+//*                                                                     00051000
+//* IBM ENTERPRISE COBOL FOR Z/OS  6.2.0                                00052002
+//*                                                                     00053000
+//* *********************************************************           00060000
+//COBUCLG PROC                                                          00070000
+//*   IBM ENTERPRISE COBOL FOR Z/OS  6.2.0 COMPILE AND LINK             00080002
+//COB    EXEC  PGM=IGYCRCTL,PARM='RENT,NODYNAM'                         00090003
+//STEPLIB  DD  DSN=IGY.V6R2M0.SIGYCOMP,DISP=SHR                         00102102
+//SYSLIB   DD  DSN=YOURID.IOCE.V251R0.JAVA.SRCLIB,DISP=SHR              00103016
+//SYSPRINT DD  SYSOUT=*                                                 00120000
+//* COBOL 6.2 ADD BELOW SYSMDECK TO JCL                                 00120102
+//SYSMDECK DD  UNIT=SYSALLDA,SPACE=(CYL,(1,1))                          00120202
+//SYSIN    DD  DSN=YOURID.IOCE.V251R0.JAVA.SRCLIB(COBTEST),DISP=SHR     00120316
+//SYSUT1   DD  UNIT=SYSDA,SPACE=(CYL,(1,1))                             00140000
+//SYSUT2   DD  UNIT=SYSDA,SPACE=(CYL,(1,1))                             00150000
+//SYSUT3   DD  UNIT=SYSDA,SPACE=(CYL,(1,1))                             00160000
+//SYSUT4   DD  UNIT=SYSDA,SPACE=(CYL,(1,1))                             00170000
+//SYSUT5   DD  UNIT=SYSDA,SPACE=(CYL,(1,1))                             00171000
+//SYSUT6   DD  UNIT=SYSDA,SPACE=(CYL,(1,1))                             00172000
+//SYSUT7   DD  UNIT=SYSDA,SPACE=(CYL,(1,1))                             00173000
+//SYSLIN   DD  DSN=&&LOADSET,UNIT=SYSDA,DISP=(MOD,PASS),                00180000
+//             SPACE=(TRK,(3,3)),DCB=BLKSIZE=800                        00190000
+//LKED   EXEC  PGM=HEWL,PARM='LIST,MAP,AMODE=31,RMODE=ANY',             00200000
+//             COND=(5,LT,COB)                                          00210000
+//SYSLIB   DD  DSN=SYS1.SCEELKED,DISP=SHR                               00230000
+//SYSLMOD  DD  DSN=&&GOSET(COBTEST),DISP=(,PASS),UNIT=SYSDA,            00240000
+//             SPACE=(CYL,(5,5,5)),DSNTYPE=LIBRARY                      00250000
+//SYSUT1   DD  UNIT=SYSDA,SPACE=(CYL,(1,1))                             00260000
+//SYSPRINT DD  SYSOUT=*                                                 00270000
+//SYSLIN   DD  DSN=&&LOADSET,DISP=(OLD,DELETE)                          00280000
+//         DD  DDNAME=SYSIN                                             00290000
+//OBJECT   DD  DSN=YOURID.IOCE.V251R0.JAVA.OBJLIB,DISP=OLD              00290116
+//GO     EXEC  PGM=COBTEST,COND=((5,LT,COB),(5,LT,LKED)),               00300000
+//  PARM='/ENVAR("_CEE_ENVFILE=/YOURPATH/IOCE/V251R0/IOCEENV251R0")'    00301016
+//* JAVAOUT AND JAVAERR CAN BE UNCOMMENTED IF NEEDED.                   00301109
+//*JAVAOUT  DD PATH='/YOURPATH/IOCE/V251R0/javaout',                    00301216
+//*  PATHOPTS=(OWRONLY,OCREAT,OTRUNC),                                  00301309
+//*  PATHMODE=(SIRUSR,SIWUSR,SIRGRP,SIWGRP,SIROTH,SIWOTH)               00301409
+//*JAVAERR  DD PATH='/YOURPATH/IOCE/V251R0/javaerr',                    00301516
+//*  PATHOPTS=(OWRONLY,OCREAT,OTRUNC),                                  00301609
+//*  PATHMODE=(SIRUSR,SIWUSR,SIRGRP,SIWGRP,SIROTH,SIWOTH)               00301709
+//STEPLIB  DD  DSN=SYS1.SCEERUN,DISP=SHR                                00301800
+//         DD  DSN=SYS1.SCEERUN2,DISP=SHR                               00301900
+//         DD  DSN=YOURID.IOCE.V251R0.JAVA.LOADLIB,DISP=SHR             00302016
+//         DD  DSN=&&GOSET,DISP=SHR                                     00302100
+//SYSPRINT DD  SYSOUT=*                                                 00303000
+//SYSOUT   DD  SYSOUT=*                                                 00303100
+//PRTFILE  DD  SYSOUT=*                                                 00303200
+//CEEDUMP  DD  SYSOUT=*                                                 00303300
+//CEEOPTS  DD  *                                                        00303400
+  XPLINK(ON),POSIX(ON)                                                  00303509
+//SYSUDUMP DD SYSOUT=*                                                  00303700
+//INUSER   DD DSN=YOURID.IOCE.V251R0.JAVA.&FILE.,DISP=OLD               00304016
+//         PEND                                                         00310000
+//*                                                                     00320000
+//PROG1    EXEC COBUCLG,FILE=TESTDB                                     00330000
+//LKED.SYSIN DD *                                                       00350000
+  ENTRY COBTEST                                                         00380000
+  NAME COBTEST                                                          00390000
+/*                                                                      00920000

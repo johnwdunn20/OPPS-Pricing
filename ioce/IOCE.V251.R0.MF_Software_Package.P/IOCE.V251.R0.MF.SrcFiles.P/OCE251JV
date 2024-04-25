@@ -1,0 +1,313 @@
+      Process pgmname(longmixed),lib,thread NSYMBOL(NATIONAL)
+      ******************************************************
+      * THIS PROGRAM IS CALLED TO PROCESS RECORDS          *
+      * PASSED TO THIS PROGRAM THAT WILL THEN CALL THE JAVA*
+      * IOCE JAVA JAR.   DATA IS RETURNED  V25.1.0 R0      *
+      ******************************************************
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. "OCE251JV" RECURSIVE.
+      ************************
+      * ENV / DATA DIVISIONS *
+      ************************
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       REPOSITORY.
+           Class ZUtil         is "com.ibm.jzos.ZUtil"
+           Class Base          is "java.lang.Object"
+           Class jstring       is "jstring"
+NEW243     Class JavaException is "java.lang.Exception"
+NEW243     Class JavaObject    is "java.lang.Object"
+NEW243     Class JavaString    is "java.lang.String"
+NEW243     Class JavaClass     is "java.lang.Class"
+NEW250     Class jclass        is "jclass"
+NEW243     Class jint          is "jint"
+           Class MainframeApi is
+               "gov/cms/oce/api/MainframeApi".
+      ******************************************************
+      * CLASS ZUTIL WAS ADDED TO REROUTE SYSOUT            *
+      ******************************************************
+       DATA DIVISION.
+      ******************************************************
+      * WORKING STORAGE                                    *
+      ******************************************************
+       WORKING-STORAGE SECTION.
+      ******************************************************
+NEW251* BEGINNING OF FIELDS USED IN ERROR HANDLING
+      ******************************************************
+       01  ex                 object reference JavaException.
+       01  exObject           object reference jclass.
+       01  classid            pic 9(18) comp-5.
+       01  class-name-utf8    pic x(64).
+       01  Boolean-Instance   PIC X.
+           88 Instance-False  VALUE X'00'.
+           88 Instance-True   VALUE X'01' through X'FF'.
+       01 WS-JAVA-ERROR       PIC 9.
+      ******************************************************
+      * END OF FIELDS USED IN ERROR HANDLING
+      ******************************************************
+       01  WS-Parm-String   object reference jstring.
+       01  WS-Return-String object reference jstring.
+       01  WS-Return-String-length object reference jstring.
+       01  WS-length-field                   PIC S9(9) COMP-5.
+       01  RC                                PIC S9(9) COMP-5.
+       01  VOID                              PIC S9(9) COMP-5.
+       01  DISP-IND                          PIC  X(1).
+CHG250*01  WS-INTERFACE-AREA-1               PIC X(35011).
+CHG250 01  WS-INTERFACE-AREA-1               PIC X(35083).
+      *
+NEW243*01 WS-JAVA-WORK-AREA                  PIC N(35011).
+CHG250 01 WS-JAVA-WORK-AREA                  PIC N(35083).
+      *
+      *add 1 byte. 97841 instead of 97840
+      *Required for the x'00' for newstringplatform
+CHG250*01  WS-INTERFACE-AREA-2               PIC X(97821).
+CHG250 01  WS-INTERFACE-AREA-2               PIC X(97841).
+      ******************************************************
+      ******************************************************
+      * COMMUNICATION AREA                                 *
+      ******************************************************
+       LINKAGE SECTION.
+CHG250*01  LNK-INTERFACE-AREA-1                  PIC X(35011).
+CHG250 01  LNK-INTERFACE-AREA-1                  PIC X(35083).
+CHG250*01  LNK-INTERFACE-AREA-2                  PIC X(97820).
+CHG250 01  LNK-INTERFACE-AREA-2                  PIC X(97840).
+       COPY JNI.
+      ******************************************************
+      * PROGRAM EXECUTION                                  *
+      ******************************************************
+       PROCEDURE DIVISION USING
+                 LNK-INTERFACE-AREA-1
+                 LNK-INTERFACE-AREA-2.
+       0100-MAINLINE.
+           SET ADDRESS OF JNIENV TO JNIENVPTR.
+           SET ADDRESS OF JNINATIVEINTERFACE TO JNIENV.
+           MOVE LNK-INTERFACE-AREA-1 TO WS-INTERFACE-AREA-1.
+           MOVE LNK-INTERFACE-AREA-1 (883:1) TO DISP-IND.
+           IF DISP-IND = '1' OR '9'
+              MOVE 'Y' TO DISP-IND.
+           IF DISP-IND = 'Y'
+              DISPLAY "0100 COMPILE DATE 03/08/2024"
+              DISPLAY "     COBOL PROGRAM OCE251JV ENTERED"
+              DISPLAY "WS-INTERFACE-AREA-1                "
+                       WS-INTERFACE-AREA-1.
+      ******************************************************
+      * BELOW CLASS ADDED TO REROUTE SYSOUT                *
+      ******************************************************
+           Invoke ZUtil "redirectStandardStreams"
+           IF DISP-IND = 'Y'
+           Display "Returned from ZUtil.redirectStandardStreams".
+      *------------------------------------------------------------*
+      *    USE FUNCTION NATIONAL-OF and DISPLAY-OF to convert data
+      *------------------------------------------------------------*
+           IF DISP-IND = 'Y'
+              DISPLAY "    JUST BEFORE FUNCTION NATIONAL-OF  ".
+NEW243     MOVE FUNCTION NATIONAL-OF (WS-INTERFACE-AREA-1, 1047) TO
+              WS-JAVA-WORK-AREA.
+           MOVE FUNCTION DISPLAY-OF (WS-JAVA-WORK-AREA, 1208) TO
+              WS-INTERFACE-AREA-1.
+
+           IF DISP-IND = 'Y'
+              DISPLAY "    JUST BEFORE NewStringUTF          ".
+           CALL  NewStringUTF
+               USING BY VALUE   JNIEnvPtr
+                     ADDRESS OF WS-INTERFACE-AREA-1
+                     RETURNING WS-Parm-String.
+      *
+           IF DISP-IND = 'Y'
+              DISPLAY "  Returned From Data Conversion Functions".
+      *
+           IF WS-PARM-STRING EQUAL NULL
+NEW243        PERFORM P9000-ERRORCHECK THRU P9000-EXIT
+              DISPLAY "Error occurred creating jstring Functions"
+              DISPLAY "Error occurred WS-INTERFACE-AREA-1"
+NEW251        MOVE  97   TO  WS-INTERFACE-AREA-2 (414:2)
+NEW251        COMPUTE  RETURN-CODE = 97
+NEW251        MOVE WS-INTERFACE-AREA-2 TO LNK-INTERFACE-AREA-2
+              GOBACK
+           END-IF.
+      *
+           IF RC NOT = ZERO THEN
+              DISPLAY "Error occurred creating jstring OBJECT"
+NEW251        MOVE  97   TO  WS-INTERFACE-AREA-2 (414:2)
+NEW251        COMPUTE  RETURN-CODE = 97
+NEW251        MOVE WS-INTERFACE-AREA-2 TO LNK-INTERFACE-AREA-2
+              GOBACK
+           END-IF.
+           IF DISP-IND = 'Y'
+              DISPLAY "    returned from NewStringPlatform".
+      *------------------------------------------------------------*
+      *    Call (process ) method
+      *------------------------------------------------------------*
+           IF DISP-IND = 'Y'
+              DISPLAY "    JUST BEFORE process MainframeApi CALL".
+           INVOKE MainframeApi  "process"
+                  USING   BY VALUE
+                             WS-Parm-String
+                  RETURNING  WS-Return-String
+           END-INVOKE.
+      *------------------------------------------------------------*
+           IF DISP-IND = 'Y'
+              DISPLAY "   RETURNED FROM JAVA MainframeApi process".
+      *------------------------------------------------------------*
+NEW243     PERFORM P9000-ERRORCHECK THRU P9000-EXIT.
+           IF WS-JAVA-ERROR EQUAL 1
+               DISPLAY "Fatal Error Detected"
+               MOVE  97   TO  WS-INTERFACE-AREA-2 (414:2)
+               COMPUTE  RETURN-CODE = 97
+               MOVE WS-INTERFACE-AREA-2 TO LNK-INTERFACE-AREA-2
+               DISPLAY "OCE251JV EXITING WITH ERROR, RETURN-CODE = "
+                  RETURN-CODE
+               GOBACK
+           ELSE
+           IF WS-JAVA-ERROR EQUAL 2
+               DISPLAY "Non-Fatal Error Detected. Processing Continues"
+               MOVE  97   TO  WS-INTERFACE-AREA-2 (414:2)
+               COMPUTE  RETURN-CODE = 97
+               MOVE WS-INTERFACE-AREA-2 TO LNK-INTERFACE-AREA-2
+               DISPLAY "OCE251JV EXITING WITH ERROR, RETURN-CODE = "
+                  RETURN-CODE
+               GOBACK.
+      *------------------------------------------------------------*
+      *    Call getStringPlatform to convert from jstring to EBCDIC
+      *------------------------------------------------------------*
+           IF DISP-IND = 'Y'
+              DISPLAY "     ABOUT TO CALL GetStringPlatform".
+           CALL "GetStringPlatform"
+               USING BY VALUE   JNIEnvPtr
+                     WS-Return-String
+                     ADDRESS OF WS-INTERFACE-AREA-2
+                     LENGTH  OF WS-INTERFACE-AREA-2
+                     0
+                     RETURNING RC
+      *
+           IF DISP-IND = 'Y'
+           DISPLAY "1st 440 char of string displayed       "
+                    WS-INTERFACE-AREA-2 (1:440)
+           DISPLAY "CLAIM RET BUFF INFO                    "
+                    WS-INTERFACE-AREA-2 (18:8).
+      *
+NEW243     PERFORM P9000-ERRORCHECK THRU P9000-EXIT.
+NEW250     IF RC NOT = ZERO THEN
+              DISPLAY "Error occurred in GetStringPlatform"
+              MOVE  97   TO  WS-INTERFACE-AREA-2 (414:2)
+              COMPUTE  RETURN-CODE = 97
+              DISPLAY "GetStringPlatform RC     " RC
+              MOVE WS-INTERFACE-AREA-2 TO LNK-INTERFACE-AREA-2
+              GOBACK
+           END-IF.
+      *
+           IF DISP-IND = 'Y'
+              DISPLAY "     BACK FROM CALL TO GetStringPlatform"
+              DISPLAY "     WS-INTERFACE-AREA-2         "
+                            WS-INTERFACE-AREA-2.
+           MOVE WS-INTERFACE-AREA-2 TO LNK-INTERFACE-AREA-2.
+      *------------------------------------------------------------*
+      *    Call DeleteLocalRef to free up jstring object
+      *------------------------------------------------------------*
+           IF DISP-IND = 'Y'
+              DISPLAY 'Del Local Ref WS-Parm-String '.
+           CALL  DeleteLocalRef
+               USING BY VALUE   JNIEnvPtr
+                     WS-Parm-String
+                     RETURNING VOID.
+      *------------------------------------------------------------*
+      *    Call DeleteLocalRef to free up jstring object
+      *------------------------------------------------------------*
+           IF DISP-IND = 'Y'
+              DISPLAY 'Del Local Ref WS-Return-String '.
+           CALL  DeleteLocalRef
+               USING BY VALUE   JNIEnvPtr
+                     WS-Return-String
+                     RETURNING VOID.
+           GOBACK.
+NEW243*------------------------------------------------------------*
+      *    ERROR CHECK
+      *------------------------------------------------------------*
+       P9000-ERRORCHECK.
+           IF DISP-IND = 'Y'
+              DISPLAY 'IN P9000-ERRORCHECK   '.
+      *
+           CALL ExceptionOccurred
+                USING BY VALUE JNIEnvPtr
+                RETURNING ex
+      *
+           If ex = null
+              go to P9000-EXIT.
+      *
+      *****************************************
+      * EVERYTHING AFTER THIS NOW ASSUMES AN ERROR
+      *****************************************
+      *    IF DISP-IND = 'Y'
+              Display "  Caught a Java Exception".
+           Call GetObjectClass using
+                     by value JNIEnvPtr
+                     by value ex
+                     returning exObject.
+      *
+      *    IF DISP-IND = 'Y'
+              DISPLAY "  CALLING EXECPTIONDESCRIBE".
+      *****************************************
+      * THIS PUTS OUT THE STACK TRACE SO WE CAN SEE THE
+      * ERROR, BUT WE STILL HAVE TO DETERMINE THE TYPE
+      ******************************************
+            Call ExceptionDescribe using by value JNIEnvPtr
+      *     IF DISP-IND = "Y"
+              Display "Preparing to check for Exception or Error".
+      *
+            Move z"java/lang/Exception" to class-name-utf8
+            Call "__etoa" using by value address of class-name-utf8
+                returning VOID.
+      *     IF DISP-IND = "Y"
+               DISPLAY "  CALLING FINDCLASS".
+      *
+            Call FindClass using
+                 by value JNIEnvPtr
+                 address of class-name-utf8
+                 returning classid.
+      *     IF DISP-IND = "Y"
+              DISPLAY "  CLASSID OF " class-name-utf8 " IS " classid.
+      ******************************************
+      *************************
+      * THIS IS THE ERROR CHECK
+      * YOU CAN LOOK FOR BOTH EXCEPTION AND ERROR, BUT WE DECIDED
+      * TO CHECK FOR EXCEPTION AND IF IT'S NOT EXCEPTION THEN IT
+      * IS ERROR.
+      * IN THEORY YOU CAN TEST FOR OTHER ERRORS, BUT WHY DO IT
+      * IF IT'S NOT AN EXCEPTION THEN PROCESSING CAN CONTINUE.
+      *************************
+           Call IsInstanceOf using by value JNIEnvPtr
+                by value ex
+                by value classid
+                returning Boolean-Instance.
+           IF RC NOT = ZERO THEN
+              DISPLAY
+                "Error occurred Calling IsInstanceOf"
+                 GOBACK.
+      *
+      *    IF DISP-IND = "Y"
+             DISPLAY
+               "After Calling IsInstanceOf java.lang.Exception".
+      *
+           If Boolean-Instance = X'00'
+              MOVE 1 TO WS-JAVA-ERROR
+              DISPLAY "BOOLEAN INSTANCE FOR EXCEPTION IS X00"
+              DISPLAY "  OCE251JV FATAL Error Detected"
+              DISPLAY "  WS-JAVA-ERROR = " WS-JAVA-ERROR.
+           If Boolean-Instance = X'01'
+              MOVE 2 TO WS-JAVA-ERROR
+              DISPLAY "BOOLEAN INSTANCE FOR EXCEPTION IS X01"
+              DISPLAY "  OCE251JV NON-FATAL Error Detected"
+              DISPLAY "  WS-JAVA-ERROR = " WS-JAVA-ERROR.
+      *
+      ******************************************
+      ***************************
+      * CLEAR THE EXCEPTION
+      ***************************
+      *    IF DISP-IND = "Y"
+             DISPLAY "  CALLING ExceptionClear".
+
+           CALL ExceptionClear    using by value JNIEnvPtr.
+
+      *    IF DISP-IND = "Y"
+              DISPLAY "  CALLED     ExceptionClear".
+       P9000-EXIT. EXIT.

@@ -1,0 +1,6 @@
+PATH=/bin:/usr:/products/java831/bin:.
+LIBPATH=/lib:/YourJavaPath/java831/bin:/YourJavaPath/java831/lib:/YourJavaPath/java831/bin/classic:/YourPath/IOCE/V251/dist
+CLASSPATH=/YourJavaPath/java831/lib:/YourPath/IOCE/V251/dist/IOCEMFV251.jar
+#Added COBJVMINITOPTIONS TO  ENVAR to send stdout/stderr to DD:SYSOUT
+COBJVMINITOPTIONS=-Djzos.merge.sysout=true
+IBM_JAVA_OPTIONS=-Xms1024m -Xmx1024m -Xquickstart 

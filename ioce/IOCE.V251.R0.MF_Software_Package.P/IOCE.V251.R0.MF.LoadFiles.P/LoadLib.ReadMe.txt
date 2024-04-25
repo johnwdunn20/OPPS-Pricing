@@ -1,0 +1,12 @@
+Integrated OCE/APC Version 25.1 R0 GEN. Release Java z/OS Load Library
+
+This Electronic Delivery includes all the members of the Load library. 
+ 
+The members are listed in table 8 of the install guide.
+
+Reminder to FTP the IOCE.V251R0.JAVA.FTPLOAD File as *** BINARY ***.
+
+See Chapter 2 in the Install guide for more information in the e-delivery Miscellaneous folder.
+
+
+Note: The mainframe software files do not meet accessibility standards for section 508 compliance.

@@ -1,0 +1,1631 @@
+      ******************************************************            COB00010
+      * RELEASE DATE - 04/01/2024 INTEGRATED OCE 25.1.0 R0 *            COB00030
+      * THIS PROGRAM IS CALLED TO PROCESS RECORDS          *
+      * PASSED TO THIS PROGRAM THAT WILL THEN CALL THE JAVA*
+      * IOCE JAVA JAR.   DATA IS RETURNED                  *
+      ******************************************************            COB00040
+      * ALL INPUT DATA IS PASSED AND   *                                COB00050
+      * RETURNED IN DATA BUFFERS THEN  *                                COB00060
+      * EXPECTED OUTPUT RECORDS IN FILE*                                COB00070
+      * ARE COMPARED TO OUTPUT BUFFER  *                                COB00080
+      **********************************                                COB00090
+       IDENTIFICATION DIVISION.                                         COB00100
+       PROGRAM-ID. COBTEST.                                             COB00110
+      ************************                                          COB00120
+      * ENV / DATA DIVISIONS *                                          COB00130
+      ************************                                          COB00140
+       ENVIRONMENT DIVISION.                                            COB00150
+       CONFIGURATION SECTION.                                           COB00160
+       SOURCE-COMPUTER. IBM-370.                                        COB00170
+       OBJECT-COMPUTER. IBM-370.                                        COB00180
+      **********************************                                COB00190
+      * INPUT OUTPUT LAYOUTS           *                                COB00200
+      **********************************                                COB00210
+       INPUT-OUTPUT SECTION.                                            COB00220
+       FILE-CONTROL.                                                    COB00230
+      ************************                                          COB00241
+      * DISK INPUT           *                                          COB00250
+      ************************                                          COB00260
+           SELECT INPUT-FILE ASSIGN TO SYS020-DA-3380-INUSER            COB00270
+                ACCESS IS SEQUENTIAL                                    COB00280
+                FILE STATUS IS IN-STAT.                                 COB00290
+      ************************                                          COB00300
+      * DISK OUTPUT          *                                          COB00310
+      ************************                                          COB00320
+           SELECT PRINT      ASSIGN TO SYS020-DA-3380-SYSPRINT.         COB00330
+      ************************                                          COB00340
+      * OPTIONAL FILE SELECT *                                          COB00350
+      * FOLLOW THIS AREA     *                                          COB00360
+      ************************                                          COB00370
+       DATA DIVISION.                                                   COB00380
+       FILE SECTION.                                                    COB00390
+      ************************                                          COB00400
+      * PRINT FILE           *                                          COB00410
+      ************************                                          COB00420
+       FD  PRINT RECORDING MODE IS F,                                   COB00430
+           LABEL RECORDS ARE OMITTED,                                   COB00440
+           RECORD CONTAINS 80 CHARACTERS.                               COB00450
+       01  PRINT-LINE                      PIC X(80).                   COB00460
+      *                                                                 COB00470
+      ************************                                          COB00480
+      * SAMPLE DISK INPUT    *                                          COB00490
+      ************************                                          COB00500
+       FD  INPUT-FILE                                                   COB00510
+           LABEL RECORDS ARE OMITTED                                    COB00520
+           RECORDING MODE IS F                                          COB00530
+           RECORD CONTAINS 300 CHARACTERS.                              COB00540
+       01  INPUT-RECORD.                                                COB00550
+           03 INPUT-REC-LAYOUT                   PIC X(300).            COB00560
+           03 CLAIM-INPUT-RECORD REDEFINES INPUT-REC-LAYOUT.            COB00570
+      ************************                                          COB00580
+      * CLAIM DATA RECORD    *                                          COB00590
+      ************************                                          COB00600
+001           05 IN-CLAIM-TYPE                   PIC X(01).             COB00610
+018           05 IN-CLAIM-IDENT-NUMBER           PIC X(17).             COB00620
+300           05 IN-CLAIM-DATA                   PIC X(282).            COB00630
+      ***************************************************************   COB00640
+      * DEMOGRAPHIC DATA RECORD 1         CLAIM TYPE = C            *   COB00650
+      ***************************************************************   COB00660
+              05 IN-CLAIM-REC-1 REDEFINES IN-CLAIM-DATA.                COB00670
+021              07 CLAIM-AGE                    PIC X(03).             COB00680
+022              07 CLAIM-SEX                    PIC X(01).             COB00690
+030              07 CLAIM-BEGIN-DATE             PIC X(08).             COB00700
+038              07 CLAIM-THRU-DATE              PIC X(08).             COB00710
+060              07 FILLER                       PIC X(22).
+063              07 CLAIM-BILL-TYPE              PIC X(03).             COB00760
+076              07 CLAIM-NPI-MEDCR-PROV-NUM     PIC X(13).             COB00770
+082              07 CLAIM-CMS-CERT-NUM           PIC X(06).             COB00780
+084              07 CLAIM-PATIENT-STATUS-CODE    PIC X(02).             COB00790
+085              07 CLAIM-OPPS-NONOPPS-FLAG      PIC X(01).             COB00800
+                 07 CLAIM-OCCURRENCE-CODES       PIC X(60).             COB00810
+                 07 CLAIM-OCC-CODES-R REDEFINES                         COB00730
+                    CLAIM-OCCURRENCE-CODES.                             COB00740
+                    09 CLAIM-OCC-CODE OCCURS 30  TIMES PIC X(02).       COB00750
+                 07 CLAIM-CONDITION-CODES        PIC X(60).
+                 07 CLAIM-CONDITION-CODES-R REDEFINES
+                    CLAIM-CONDITION-CODES.
+                    09 CLAIM-COND-CODE OCCURS 30 TIMES PIC X(02).
+                 07 CLAIM-RECEIPT-DATE           PIC X(08).             COB00700
+                 07 CLAIM-OPT-DATA               PIC X(087).
+      ***************************************************************   COB00830
+      * DIAGNOSES CODES                   CLAIM TYPE = D            *   COB00840
+      ***************************************************************   COB00850
+              05 DIAG-REC-2      REDEFINES IN-CLAIM-DATA.               COB00860
+                 07 DIAG-CODES                   PIC X(224).            COB00870
+                 07 DIAG-CODES-R  REDEFINES DIAG-CODES.                 COB00880
+                    09 DIAG-CODE OCCURS 28 TIMES PIC X(08).             COB00890
+                 07 DIAG-CODES-R2 REDEFINES DIAG-CODES.                 COB00880
+                    09 RVDX01                    PIC X(07).
+                    09 RVDX01-POA                PIC X(01).
+                    09 RVDX02                    PIC X(07).
+                    09 RVDX02-POA                PIC X(01).
+                    09 RVDX03                    PIC X(07).
+                    09 RVDX03-POA                PIC X(01).
+                    09 PDX                       PIC X(07).
+                    09 PDX-POA                   PIC X(01).
+                    09 SDX01                     PIC X(07).
+                    09 SDX01-POA                 PIC X(01).
+                    09 SDX02                     PIC X(07).
+                    09 SDX02-POA                 PIC X(01).
+                    09 SDX03                     PIC X(07).
+                    09 SDX03-POA                 PIC X(01).
+                    09 SDX04                     PIC X(07).
+                    09 SDX04-POA                 PIC X(01).
+                    09 SDX05                     PIC X(07).
+                    09 SDX05-POA                 PIC X(01).
+                    09 SDX06                     PIC X(07).
+                    09 SDX06-POA                 PIC X(01).
+                    09 SDX07                     PIC X(07).
+                    09 SDX07-POA                 PIC X(01).
+                    09 SDX08                     PIC X(07).
+                    09 SDX08-POA                 PIC X(01).
+                    09 SDX09                     PIC X(07).
+                    09 SDX09-POA                 PIC X(01).
+                    09 SDX10                     PIC X(07).
+                    09 SDX10-POA                 PIC X(01).
+                    09 SDX11                     PIC X(07).
+                    09 SDX11-POA                 PIC X(01).
+                    09 SDX12                     PIC X(07).
+                    09 SDX12-POA                 PIC X(01).
+                    09 SDX13                     PIC X(07).
+                    09 SDX13-POA                 PIC X(01).
+                    09 SDX14                     PIC X(07).
+                    09 SDX14-POA                 PIC X(01).
+                    09 SDX15                     PIC X(07).
+                    09 SDX15-POA                 PIC X(01).
+                    09 SDX16                     PIC X(07).
+                    09 SDX16-POA                 PIC X(01).
+                    09 SDX17                     PIC X(07).
+                    09 SDX17-POA                 PIC X(01).
+                    09 SDX18                     PIC X(07).
+                    09 SDX18-POA                 PIC X(01).
+                    09 SDX19                     PIC X(07).
+                    09 SDX19-POA                 PIC X(01).
+                    09 SDX20                     PIC X(07).
+                    09 SDX20-POA                 PIC X(01).
+                    09 SDX21                     PIC X(07).
+                    09 SDX21-POA                 PIC X(01).
+                    09 SDX22                     PIC X(07).
+                    09 SDX22-POA                 PIC X(01).
+                    09 SDX23                     PIC X(07).
+                    09 SDX23-POA                 PIC X(01).
+                    09 SDX24                     PIC X(07).
+                    09 SDX24-POA                 PIC X(01).
+                 07 DIAG-CODES-R3 REDEFINES DIAG-CODES.
+                    09 FILLER                    PIC X(32).
+                    09 SDX-CODES                 PIC X(192).
+                 07 FILLER                       PIC X(58).             COB00900
+      ***************************************************************   OCE00760
+      * VALUE CODES AND AMOUNTS (21 VALUES) CLAIM TYPE = E     282  *   OCE00770
+      ***************************************************************   OCE00780
+              05 VALUE-CODES-AMOUNTS-REC3 REDEFINES IN-CLAIM-DATA.      COB00950
+CHG250*          07 VALUE-CODES-AMOUNTS-E        PIC X(264).            OCE00800
+CHG250           07 VALUE-CODES-AMOUNTS-E        PIC X(273).            OCE00800
+                 07 VALUE-CODES-AMOUNTS-E-R REDEFINES                   OCE00810
+                    VALUE-CODES-AMOUNTS-E.
+                    09 VALUE-CODES-AMOUNTS-E-OCC
+CHG250                           OCCURS 21 TIMES.
+CHG250*                          OCCURS 24 TIMES.
+                       11 VALUE-CODE-E           PIC X(02).
+CHG250                 11 VALUE-AMOUNT-E         PIC X(11).
+CHG250*                11 VALUE-AMOUNT-E         PIC X(09).
+                       11 VALUE-AMOUNT-E-N       REDEFINES
+CHG250                    VALUE-AMOUNT-E         PIC 9(11).
+CHG250*                   VALUE-AMOUNT-E         PIC 9(09).
+CHG250           07 FILLER                       PIC X(09).             COB00900
+CHG250*          07 FILLER                       PIC X(18).             COB00900
+      *                                                                 OCE00840
+      ***************************************************************   OCE00760
+      * VALUE CODES AND AMOUNTS (15 VALUES)CLAIM TYPE = F     282   *   OCE00770
+      ***************************************************************   OCE00780
+              05 VALUE-CODES-AMOUNTS-REC4 REDEFINES IN-CLAIM-DATA.      COB00950
+CHG250           07 VALUE-CODES-AMOUNTS-F        PIC X(195).            OCE00800
+CHG250*          07 VALUE-CODES-AMOUNTS-F        PIC X(132).            OCE00800
+                 07 VALUE-CODES-AMOUNTS-F-R REDEFINES                   OCE00810
+                    VALUE-CODES-AMOUNTS-F.
+                    09 VALUE-CODES-AMOUNTS-F-OCC
+CHG250                           OCCURS 15 TIMES.
+CHG250*                          OCCURS 12 TIMES.
+                       11 VALUE-CODE-F           PIC X(02).
+CHG250                 11 VALUE-AMOUNT-F         PIC X(11).
+CHG250*                11 VALUE-AMOUNT-F         PIC X(09).
+                       11 VALUE-AMOUNT-F-N       REDEFINES
+CHG250                    VALUE-AMOUNT-F         PIC 9(11).
+CHG250*                   VALUE-AMOUNT-F         PIC 9(09).
+CHG250           07 FILLER                       PIC X(087).            COB00900
+CHG250*          07 FILLER                       PIC X(150).            COB00900
+      ***************************************************************   COB00920
+      * LINE ITEM DATA                    CLAIM TYPE = L            *   COB00930
+      ***************************************************************   COB00940
+              05 LINE-ITEM-REC5 REDEFINES IN-CLAIM-DATA.                COB00950
+                 07 LNITM-ID-NUM                 PIC X(03).             COB00960
+                 07 LNITM-HCPCS-PROC-CODE        PIC X(05).             COB00970
+                 07 LNITM-MODIFIERS              PIC X(10).             COB00980
+                 07 LNITM-MOD-R REDEFINES LNITM-MODIFIERS.              COB00990
+                    09 LNITM-MOD-CODE OCCURS 05 TIMES PIC X(02).        COB01000
+                 07 LNITM-SERVICE-DATE           PIC X(08).             COB01010
+                 07 LNITM-REV-CODE               PIC X(04).             COB01020
+                 07 LNITM-SERV-UNIT              PIC X(09).             COB01030
+                 07 LNITM-CHARGES-X              PIC X(10).             COB01040
+                 07 LNITM-CHARGES-N REDEFINES                           COB01050
+                    LNITM-CHARGES-X              PIC 9(08)V99.          COB01060
+                 07 LNITM-ACTION-FLAG            PIC X(01).             COB01070
+                 07 LNITM-CB-EDITS               PIC X(12).             COB04380
+                 07 LNITM-CB-EDITS-R REDEFINES LNITM-CB-EDITS.          COB04630
+                    09 LNITM-CB-EDIT       OCCURS 04 TIMES.             COB04640
+                       11 LNITM-CB-EDIT-NUM-X    PIC X(03).             COB04650
+                 07 LNITM-CB-PAY-APC-ASC         PIC X(05).             COB05550
+                 07 LNITM-CB-STATUS-IND          PIC X(02).             COB05570
+                 07 LNITM-CB-PAY-IND             PIC X(02).             COB05580
+                 07 LNITM-CB-DISC-FORMULA        PIC X(01).             COB05590
+                 07 LNITM-CB-DEN-REJ-FLAG        PIC X(01).             COB05600
+                 07 LNITM-CB-PACK-FLAG           PIC X(01).             COB05610
+                 07 LNITM-CB-PAY-ADJ-FLAG1       PIC X(02).             COB05620
+                 07 LNITM-CB-PAY-METHD-FLAG      PIC X(01).             COB05630
+                 07 LNITM-CB-PAY-ADJ-FLAG2       PIC X(02).             COB05620
+                 07 FILLER                       PIC X(203).            COB01080
+      ***************************************************************   COB01090
+      * M INPUT  RECORD LAYOUT         IN CLAIM TYPE = M            *   COB01100
+      ***************************************************************   COB01110
+              05 IN-M-CLAIM-REC   REDEFINES IN-CLAIM-DATA.              COB01120
+                 07 IN-M-CLM-PROC-FLAG           PIC X(01).             COB01130
+                 07 IN-M-CLM-OVRALL-DISP         PIC X(01).             COB01140
+                 07 IN-M-CLM-REJ-DISP            PIC X(01).             COB01150
+                 07 IN-M-CLM-DEN-DISP            PIC X(01).             COB01160
+                 07 IN-M-CLM-RET-PROV-DISP       PIC X(01).             COB01170
+                 07 IN-M-CLM-SUSP-DISP           PIC X(01).             COB01180
+                 07 IN-M-CLM-LI-REJ-DISP         PIC X(01).             COB01190
+                 07 IN-M-CLM-LI-DEN-DISP         PIC X(01).             COB01200
+                 07 IN-M-CLM-REJ-REASON          PIC X(12).             COB01210
+                 07 IN-M-CLM-DEN-REASON          PIC X(24).             COB01220
+                 07 IN-M-CLM-RET-PROV-RSN        PIC X(90).             COB01230
+CHG250*          07 IN-M-VALUE-CODES-AMOUNTS     PIC X(110).
+CHG250           07 IN-M-VALUE-CODES-AMOUNTS     PIC X(130).
+                 07 IN-M-VALUE-CODES-AMOUNTS-R   REDEFINES
+                    IN-M-VALUE-CODES-AMOUNTS.
+                    09 IN-M-VALUE-CODE-AMOUNT OCCURS 10 TIMES.
+                       11 IN-M-VALUE-CODE        PIC X(02).
+CHG250                 11 IN-M-AMOUNT-CODE       PIC X(11).
+CHG250*                11 IN-M-AMOUNT-CODE       PIC X(09).
+                       11 IN-M-AMOUNT-CODE-N     REDEFINES
+CHG250                    IN-M-AMOUNT-CODE       PIC 9(09)V99.
+CHG250*                   IN-M-AMOUNT-CODE       PIC 9(07)V99.
+CHG250           07 FILLER                       PIC X(18).             COB01240
+CHG250*          07 FILLER                       PIC X(38).             COB01240
+      ***************************************************************   COB01260
+      * N INPUT  RECORD LAYOUT         IN CLAIM TYPE = N            *   COB01270
+      ***************************************************************   COB01280
+              05 IN-N-CLAIM-REC   REDEFINES  IN-CLAIM-DATA.             COB01290
+                 07 IN-N-CLM-SUSP-REASON         PIC X(48).             COB01300
+                 07 IN-N-CLM-LI-REJ-REASON       PIC X(36).             COB01310
+                 07 IN-N-CLM-LI-DEN-REASON       PIC X(18).             COB01320
+                 07 IN-N-CLM-APC-ASC-RET-BUF-FLG PIC X(01).             COB01330
+                 07 IN-N-NPI-MEDCR-PROV-NUM      PIC X(13).             COB01340
+                 07 IN-N-CMS-CERT-NUM            PIC X(06).             COB01350
+                 07 IN-N-TOT-NUM-LINE-ITEM       PIC X(03).             COB01360
+                 07 IN-N-VERSION-USED            PIC X(08).             COB01370
+                 07 IN-N-PAT-STATUS-CODE         PIC X(02).             COB01380
+                 07 IN-N-OPPS-NONOPPS-FLAG       PIC X(01).             COB01390
+                 07 IN-N-NOPPS-BILL-FLAG         PIC X(01).             COB01390
+                 07 IN-N-PAYER-COND-CODES        PIC X(20).             COB01390
+                 07 IN-N-CLAIM-RETURN-CODE       PIC X(02).             COB01390
+                 07 FILLER                       PIC X(123).            COB01400
+      ***************************************************************   COB01420
+      * O INPUT  RECORD LAYOUT         IN CLAIM TYPE = O            *   COB01430
+      * DIAGNOSIS EDITS 01-09 FROM DX EDIT BUFFER                   *   COB01440
+      * DIAGNOSIS 1 TO 3 ARE RVDX'S, DX 4 IS PRINCIPLE DIAGNOSIS    *   COB01440
+      ***************************************************************   COB01450
+              05 IN-O-CLAIM-REC   REDEFINES  IN-CLAIM-DATA.             COB01460
+                 07 IN-O-RVDX01-ED-RET           PIC X(24).             COB01470
+                 07 IN-O-RVDX02-ED-RET           PIC X(24).             COB01480
+                 07 IN-O-RVDX03-ED-RET           PIC X(24).             COB01490
+                 07 IN-O-PDX-ED-RET              PIC X(24).             COB01500
+                 07 IN-O-SDX01-ED-RET            PIC X(24).             COB01510
+                 07 IN-O-SDX02-ED-RET            PIC X(24).             COB01510
+                 07 IN-O-SDX03-ED-RET            PIC X(24).             COB01510
+                 07 IN-O-SDX04-ED-RET            PIC X(24).             COB01510
+                 07 IN-O-SDX05-ED-RET            PIC X(24).             COB01510
+                 07 FILLER                       PIC X(66).             COB01520
+      ***************************************************************   COB01540
+      * P  INPUT RECORD LAYOUT         IN CLAIM TYPE = P            *   COB01550
+      * DIAGNOSIS EDITS 10-18 FROM DX EDIT BUFFER                   *   COB01560
+      ***************************************************************   COB01570
+              05 IN-P-CLAIM-REC   REDEFINES  IN-CLAIM-DATA.             COB01580
+                 07 IN-P-SDX06-ED-RET            PIC X(24).             COB01510
+                 07 IN-P-SDX07-ED-RET            PIC X(24).             COB01510
+                 07 IN-P-SDX08-ED-RET            PIC X(24).             COB01510
+                 07 IN-P-SDX09-ED-RET            PIC X(24).             COB01510
+                 07 IN-P-SDX10-ED-RET            PIC X(24).             COB01510
+                 07 IN-P-SDX11-ED-RET            PIC X(24).             COB01510
+                 07 IN-P-SDX12-ED-RET            PIC X(24).             COB01510
+                 07 IN-P-SDX13-ED-RET            PIC X(24).             COB01510
+                 07 IN-P-SDX14-ED-RET            PIC X(24).             COB01510
+                 07 FILLER                       PIC X(66).             COB01640
+      ***************************************************************   COB01660
+      * Q  INPUT RECORD LAYOUT         IN CLAIM TYPE = Q            *   COB01670
+      * DIAGNOSIS EDITS 19-28 FROM DX EDIT BUFFER                   *   COB01680
+      ***************************************************************   COB01690
+              05 IN-Q-CLAIM-REC   REDEFINES  IN-CLAIM-DATA.             COB01700
+                 07 IN-Q-SDX15-ED-RET            PIC X(24).             COB01510
+                 07 IN-Q-SDX16-ED-RET            PIC X(24).             COB01510
+                 07 IN-Q-SDX17-ED-RET            PIC X(24).             COB01510
+                 07 IN-Q-SDX18-ED-RET            PIC X(24).             COB01510
+                 07 IN-Q-SDX19-ED-RET            PIC X(24).             COB01510
+                 07 IN-Q-SDX20-ED-RET            PIC X(24).             COB01510
+                 07 IN-Q-SDX21-ED-RET            PIC X(24).             COB01510
+                 07 IN-Q-SDX22-ED-RET            PIC X(24).             COB01510
+                 07 IN-Q-SDX23-ED-RET            PIC X(24).             COB01510
+                 07 IN-Q-SDX24-ED-RET            PIC X(24).             COB01510
+                 07 FILLER                       PIC X(42).             COB01760
+      ***************************************************************   COB01780
+      * R  INPUT RECORD LAYOUT         IN CLAIM TYPE = R            *   COB01790
+      * LINE ITEM EDITS FROM APC RETURN BUFFER & PROCEDURE EDIT BUFR*   COB01800
+      ***************************************************************   COB01810
+              05 IN-R-CLAIM-REC   REDEFINES IN-CLAIM-DATA.              COB01820
+                 07 IN-R-HOLD-AREA               PIC X(32).             COB01830
+                 07 IN-R-HOLD-AREA-R REDEFINES IN-R-HOLD-AREA.          COB01840
+                    09 IN-R-LNITM-ID-NUM         PIC X(03).             COB01850
+                    09 IN-R-APC-PAY-ASC          PIC X(05).             COB01860
+                    09 IN-R-HCPCS-APC-ASC        PIC X(05).             COB01870
+                    09 IN-R-STATUS-IND           PIC X(02).             COB01880
+                    09 IN-R-PAY-IND              PIC X(02).             COB01890
+                    09 IN-R-DISC-FORMULA         PIC X(01).             COB01900
+                    09 IN-R-DEN-REJ-FLAG         PIC X(01).             COB01910
+                    09 IN-R-PACK-FLAG            PIC X(01).             COB01920
+                    09 IN-R-PAY-ADJ-FLAG1        PIC X(02).             COB01930
+                    09 IN-R-PAY-METHD-FLAG       PIC X(01).             COB01940
+                    09 IN-R-SERV-UNITS           PIC X(09).             COB01950
+                 07 IN-R-SG-ED-RET-X             PIC X(90).             COB01960
+                 07 IN-R-HCPCS-SG-CODE           PIC X(05).             COB01970
+                 07 IN-R-LIN-ITEM-ACTION-FLAG    PIC X(01).             COB01980
+                 07 IN-R-COMPOSITE-ADJ-FLAG      PIC X(02).             COB01980
+                 07 IN-R-HCPCS-MODIFIER          PIC X(04).             COB01980
+                 07 IN-R-PAY-ADJ-FLAG2           PIC X(02).             COB01930
+                 07 FILLER                       PIC X(146).            COB01990
+      ***************************************************************   COB02010
+      * S  INPUT RECORD LAYOUT         IN CLAIM TYPE = S            *   COB02020
+      * LINE ITEM EDITS FROM MODIFIER EDIT BUFFER, DATE EDIT BUFFER,*   COB02030
+      * AND REVENUE EDIT BUFFER                                     *   COB02040
+      ***************************************************************   COB02050
+              05 IN-S-CLAIM-REC   REDEFINES  IN-CLAIM-DATA.             COB02060
+                 07 IN-S-LNITM-ID-NUM            PIC X(03).             COB02070
+                 07 IN-S-MOD-ED-RET-X            PIC X(60).             COB02080
+                 07 IN-S-DTE-ED-RET-X            PIC X(12).             COB02090
+                 07 IN-S-REV-ED-RET-X            PIC X(15).             COB02100
+                 07 IN-S-APC-CHARGES-X           PIC X(10).             COB02110
+                 07 IN-S-APC-CHARGES-N REDEFINES                        COB02120
+                    IN-S-APC-CHARGES-X           PIC 9(08)V99.          COB02130
+                 07 FILLER                       PIC X(182).            COB02140
+      ******************************************************            COB02160
+      * WORKING STORAGE                                    *            COB02170
+      ******************************************************            COB02180
+       WORKING-STORAGE SECTION.                                         COB02190
+      ************************                                          COB02210
+      * PROGRAM VARIABLES    *                                          COB02220
+      ************************                                          COB02230
+       01  PROGRAM-VARIABLES.                                           COB02240
+           03 IN-STAT                            PIC X(02) VALUE '00'.  COB02250
+           03 EOF-FLAG                           PIC X(01) VALUE 'N'.   COB02260
+           03 MAX-LINE-ITEM-CNT                  PIC 9(03) VALUE 450.   COB02270
+           03 MAX-DX-CNT                         PIC 9(02) VALUE 28.    COB02280
+           03 MAX-OCC-CODE                       PIC 9(02) VALUE 10.    COB02280
+           03 L-REC-CNT                          PIC 9(03) VALUE 0.
+           03 WS-SUB1                            PIC 9(04) VALUE 0.     COB02290
+           03 WS-SUB2                            PIC 9(04) VALUE 0.     COB02300
+           03 WS-SUB3                            PIC 9(04) VALUE 0.     COB02310
+           03 WS-SUB4                            PIC 9(04) VALUE 0.     COB02320
+           03 WS-SUB5                            PIC 9(04) VALUE 0.     COB02330
+           03 TOT-CLAIM-CNT                      PIC 9(08).             COB02340
+           03 TOT-REC-CNT                        PIC 9(08).             COB02350
+           03 TOT-MIS-CLAIM-CNT                  PIC 9(08).             COB02350
+           03 MISMATCH-IND                       PIC X(01) VALUE 'N'.   COB02360
+           03 DISP-IND                           PIC X(01).
+           03 OCE251JV                     PIC X(08) VALUE 'OCE251JV'.
+      *                                                                 COB02370
+      ************************                                          COB02380
+      * TEMPORARY OUTPUT HOLD*                                          COB02390
+      * AREAS FOR COMPARING  *                                          COB02400
+      ************************                                          COB02410
+       01  OUTPUT-HOLD.                                                 COB02420
+           03 OUTPUT-HLD-LAYOUT                  PIC X(300).            COB02430
+           03 CLAIM-HOLD-RECORD REDEFINES OUTPUT-HLD-LAYOUT.            COB02440
+      ************************                                          COB02450
+      * CLAIM DATA RECORD    *                                          COB02460
+      ************************                                          COB02470
+              05 OUT-CLAIM-TYPE                  PIC X(01).             COB02480
+              05 OUT-CLAIM-IDENT-NUMBER          PIC X(17).             COB02490
+              05 OUT-CLAIM-DATA                  PIC X(282).            COB02500
+      ***************************************************************   COB02510
+      * M OUTPUT RECORD LAYOUT        OUT CLAIM TYPE = M            *   COB02520
+      ***************************************************************   COB02530
+              05 OUT-M-CLAIM-REC   REDEFINES OUT-CLAIM-DATA.            COB02540
+                 07 OUT-M-CLM-PROC-FLAG          PIC X(01).             COB02550
+                 07 OUT-M-CLM-OVRALL-DISP        PIC X(01).             COB02560
+                 07 OUT-M-CLM-REJ-DISP           PIC X(01).             COB02570
+                 07 OUT-M-CLM-DEN-DISP           PIC X(01).             COB02580
+                 07 OUT-M-CLM-RET-PROV-DISP      PIC X(01).             COB02590
+                 07 OUT-M-CLM-SUSP-DISP          PIC X(01).             COB02600
+                 07 OUT-M-CLM-LI-REJ-DISP        PIC X(01).             COB02610
+                 07 OUT-M-CLM-LI-DEN-DISP        PIC X(01).             COB02620
+                 07 OUT-M-CLM-REJ-REASON         PIC X(12).             COB02630
+                 07 OUT-M-CLM-DEN-REASON         PIC X(24).             COB02640
+                 07 OUT-M-CLM-RET-PROV-RSN       PIC X(90).             COB02650
+CHG250*          07 OUT-M-VALUE-CODES-AMOUNTS    PIC X(110).
+CHG250           07 OUT-M-VALUE-CODES-AMOUNTS    PIC X(130).
+                 07 OUT-M-VALUE-CODES-AMOUNTS-R  REDEFINES
+                    OUT-M-VALUE-CODES-AMOUNTS.
+                    09 OUT-M-VALUE-CODE-AMOUNT OCCURS 10 TIMES.
+                       11 OUT-M-VALUE-CODE       PIC X(02).
+CHG250*                11 OUT-M-AMOUNT-CODE      PIC X(09).
+CHG250                 11 OUT-M-AMOUNT-CODE      PIC X(11).
+                       11 OUT-M-AMOUNT-CODE-N    REDEFINES
+CHG250                    OUT-M-AMOUNT-CODE      PIC 9(09)V99.
+CHG250*                   OUT-M-AMOUNT-CODE      PIC 9(07)V99.
+CHG250           07 FILLER                       PIC X(18).             COB01240
+CHG250*          07 FILLER                       PIC X(38).             COB01240
+      ***************************************************************   COB02680
+      * N OUTPUT RECORD LAYOUT        OUT CLAIM TYPE = N            *   COB02690
+      ***************************************************************   COB02700
+              05 OUT-N-CLAIM-REC   REDEFINES OUT-CLAIM-DATA.            COB02710
+                 07 OUT-N-CLM-SUSP-REASON         PIC X(48).            COB02720
+                 07 OUT-N-CLM-LI-REJ-REASON       PIC X(36).            COB02730
+                 07 OUT-N-CLM-LI-DEN-REASON       PIC X(18).            COB02740
+                 07 OUT-N-CLM-APC-ASC-RET-BUF-FLG PIC X(01).            COB02750
+                 07 OUT-N-NPI-MEDCR-PROV-NUM      PIC X(13).            COB02760
+                 07 OUT-N-CMS-CERT-NUM            PIC X(06).            COB02770
+                 07 OUT-N-TOT-NUM-LINE-ITEM       PIC X(03).            COB02780
+                 07 OUT-N-VERSION-USED            PIC X(08).            COB02790
+                 07 OUT-N-PAT-STATUS-CODE         PIC X(02).            COB02800
+                 07 OUT-N-OPPS-NONOPPS-FLAG       PIC X(01).            COB02810
+                 07 OUT-N-NOPPS-BILL-FLAG         PIC X(01).            COB01390
+                 07 OUT-N-PAYER-COND-CODES        PIC X(20).            COB01390
+                 07 OUT-N-CLAIM-RETURN-CODE       PIC X(02).            COB01390
+                 07 FILLER                        PIC X(123).           COB02820
+      ***************************************************************   COB02840
+      * O OUTPUT RECORD LAYOUT        OUT CLAIM TYPE = O            *   COB02850
+      * DIAGNOSIS EDITS 01-05 FROM DX EDIT BUFFER                   *   COB02860
+      * DIAGNOSIS 01 IS ADMIT DX, DX02 IS PRINCIPAL DX              *   COB01440
+      ***************************************************************   COB02870
+              05 OUT-O-CLAIM-REC   REDEFINES OUT-CLAIM-DATA.            COB02880
+                 07 OUT-O-RVDX01-ED-RET          PIC X(24).             COB02890
+                 07 OUT-O-RVDX02-ED-RET          PIC X(24).             COB02900
+                 07 OUT-O-RVDX03-ED-RET          PIC X(24).             COB02910
+                 07 OUT-O-PDX-ED-RET             PIC X(24).             COB02920
+                 07 OUT-O-SDX01-ED-RET           PIC X(24).             COB02930
+                 07 OUT-O-SDX02-ED-RET           PIC X(24).             COB02900
+                 07 OUT-O-SDX03-ED-RET           PIC X(24).             COB02910
+                 07 OUT-O-SDX04-ED-RET           PIC X(24).             COB02920
+                 07 OUT-O-SDX05-ED-RET           PIC X(24).             COB02930
+                 07 FILLER                       PIC X(66).             COB02940
+      ***************************************************************   COB02960
+      * P OUTPUT RECORD LAYOUT        OUT CLAIM TYPE = P            *   COB02970
+      * DIAGNOSIS EDITS 06-10 FROM DX EDIT BUFFER                   *   COB02980
+      ***************************************************************   COB02990
+              05 OUT-P-CLAIM-REC   REDEFINES OUT-CLAIM-DATA.            COB03000
+                 07 OUT-P-SDX06-ED-RET           PIC X(24).             COB03010
+                 07 OUT-P-SDX07-ED-RET           PIC X(24).             COB03020
+                 07 OUT-P-SDX08-ED-RET           PIC X(24).             COB03030
+                 07 OUT-P-SDX09-ED-RET           PIC X(24).             COB03040
+                 07 OUT-P-SDX10-ED-RET           PIC X(24).             COB03050
+                 07 OUT-P-SDX11-ED-RET           PIC X(24).             COB03010
+                 07 OUT-P-SDX12-ED-RET           PIC X(24).             COB03020
+                 07 OUT-P-SDX13-ED-RET           PIC X(24).             COB03030
+                 07 OUT-P-SDX14-ED-RET           PIC X(24).             COB03040
+                 07 FILLER                       PIC X(66).             COB03060
+      ***************************************************************   COB03080
+      * Q OUTPUT RECORD LAYOUT        OUT CLAIM TYPE = Q            *   COB03090
+      * DIAGNOSIS EDITS 11-16 FROM DX EDIT BUFFER                   *   COB03100
+      ***************************************************************   COB03110
+              05 OUT-Q-CLAIM-REC   REDEFINES OUT-CLAIM-DATA.            COB03120
+                 07 OUT-Q-SDX15-ED-RET           PIC X(24).             COB03130
+                 07 OUT-Q-SDX16-ED-RET           PIC X(24).             COB03140
+                 07 OUT-Q-SDX17-ED-RET           PIC X(24).             COB03150
+                 07 OUT-Q-SDX18-ED-RET           PIC X(24).             COB03160
+                 07 OUT-Q-SDX19-ED-RET           PIC X(24).             COB03170
+                 07 OUT-Q-SDX20-ED-RET           PIC X(24).             COB03170
+                 07 OUT-Q-SDX21-ED-RET           PIC X(24).             COB03130
+                 07 OUT-Q-SDX22-ED-RET           PIC X(24).             COB03140
+                 07 OUT-Q-SDX23-ED-RET           PIC X(24).             COB03150
+                 07 OUT-Q-SDX24-ED-RET           PIC X(24).             COB03160
+                 07 FILLER                       PIC X(42).             COB03180
+      ***************************************************************   COB03200
+      * R OUTPUT RECORD LAYOUT        OUT CLAIM TYPE = R            *   COB03210
+      * LINE ITEM EDITS FROM APC RETURN BUFFER & PROCEDURE EDIT BUFR*   COB03220
+      ***************************************************************   COB03230
+              05 OUT-R-CLAIM-REC   REDEFINES OUT-CLAIM-DATA.            COB03240
+                 07 OUT-R-HOLD-AREA              PIC X(32).             COB03250
+                 07 OUT-R-HOLD-AREA-R REDEFINES OUT-R-HOLD-AREA.        COB03260
+                    09 OUT-R-LNITM-ID-NUM        PIC X(03).             COB03270
+                    09 OUT-R-APC-PAY-ASC         PIC X(05).             COB03280
+                    09 OUT-R-HCPCS-APC-ASC       PIC X(05).             COB03290
+                    09 OUT-R-STATUS-IND          PIC X(02).             COB03300
+                    09 OUT-R-PAY-IND             PIC X(02).             COB03310
+                    09 OUT-R-DISC-FORMULA        PIC X(01).             COB03320
+                    09 OUT-R-DEN-REJ-FLAG        PIC X(01).             COB03330
+                    09 OUT-R-PACK-FLAG           PIC X(01).             COB03340
+                    09 OUT-R-PAY-ADJ-FLAG1       PIC X(02).             COB03350
+                    09 OUT-R-PAY-METHD-FLAG      PIC X(01).             COB03360
+                    09 OUT-R-SERV-UNITS          PIC X(09).             COB03370
+                 07 OUT-R-SG-ED-RET-X            PIC X(90).             COB03380
+                 07 OUT-R-HCPCS-SG-CODE          PIC X(05).             COB03390
+                 07 OUT-R-LIN-ITEM-ACTION-FLAG   PIC X(01).             COB03400
+                 07 OUT-R-COMPOSITE-ADJ-FLAG     PIC X(02).             COB03400
+                 07 OUT-R-HCPCS-MODIFIER         PIC X(04).             COB03400
+                 07 OUT-R-PAY-ADJ-FLAG2          PIC X(02).             COB03350
+                 07 FILLER                       PIC X(146).            COB03410
+      ***************************************************************   COB03430
+      * S OUTPUT RECORD LAYOUT        OUT CLAIM TYPE = S            *   COB03440
+      * LINE ITEM EDITS FROM MODIFIER EDIT BUFFER, DATE EDIT BUFFER,*   COB03450
+      * AND REVENUE EDIT BUFFER                                     *   COB03460
+      ***************************************************************   COB03470
+              05 OUT-S-CLAIM-REC   REDEFINES OUT-CLAIM-DATA.            COB03480
+                 07 OUT-S-LNITM-ID-NUM           PIC X(03).             COB03490
+                 07 OUT-S-MOD-ED-RET-X           PIC X(60).             COB03500
+                 07 OUT-S-DTE-ED-RET-X           PIC X(12).             COB03510
+                 07 OUT-S-REV-ED-RET-X           PIC X(15).             COB03520
+                 07 OUT-S-APC-CHARGES-X          PIC X(10).             COB03530
+                 07 OUT-S-APC-CHARGES-N REDEFINES                       COB03540
+                    OUT-S-APC-CHARGES-X          PIC 9(08)V99.          COB03550
+                 07 FILLER                       PIC X(182).            COB03560
+      ***************************************************************   COB03580
+      * REPORT  RECORD LAYOUTS                                      *   COB03590
+      ***************************************************************   COB03600
+       01  CLAIM-OUTPUT-LAYOUT.                                         COB03610
+           03 FILLER                            PIC X(20) VALUE         COB03620
+                                                'CLAIM ID: '.           COB03630
+           03 CLAIM-ID                          PIC X(17).              COB03640
+           03 FILLER                            PIC X(43) VALUE SPACES. COB03650
+      *                                                                 COB03660
+       01  EXPECTED-LAYOUT.                                             COB03670
+           03 FILLER                            PIC X(06) VALUE         COB03680
+                                                'EXP : '.               COB03690
+           03 EXPECTED-FIELD-LABEL              PIC X(13).              COB03700
+           03 FILLER                            PIC X(01) VALUE SPACES. COB03710
+           03 EXPECTED-FIELD                    PIC X(60).              COB03720
+      *                                                                 COB03730
+       01  ACTUAL-LAYOUT.                                               COB03740
+           03 FILLER                            PIC X(06) VALUE         COB03750
+                                                'ACTL: '.               COB03760
+           03 ACTUAL-FIELD-LABEL                PIC X(13).              COB03770
+           03 FILLER                            PIC X(01) VALUE SPACES. COB03780
+           03 ACTUAL-FIELD                      PIC X(60).              COB03790
+      *                                                                 COB03800
+       01  TOTAL-LAYOUT.                                                COB03810
+           03 FILLER                            PIC X(03) VALUE SPACES. COB03820
+           03 TOT-CLAIM-NUM                     PIC 9(08).              COB03830
+           03 FILLER                            PIC X(03) VALUE SPACES. COB03840
+           03 TOT-CLAIM-LABEL                   PIC X(17) VALUE         COB03850
+                                                'CLAIMS PROCESSED'.     COB03860
+           03 FILLER                            PIC X(10) VALUE SPACES. COB03870
+           03 TOT-REC-NUM                       PIC 9(08).              COB03880
+           03 FILLER                            PIC X(03) VALUE SPACES. COB03890
+           03 TOT-REC-LABEL                     PIC X(17) VALUE         COB03900
+                                                'RECORDS PROCESSED'.    COB03910
+           03 FILLER                            PIC X(11) VALUE SPACES. COB03920
+      *                                                                 COB03930
+       01  MISMATCH-COUNT-LAYOUT.                                       COB03810
+           03 FILLER                            PIC X(03) VALUE SPACES. COB03820
+           03 TOT-CLAIM-MISMATCH-NUM            PIC 9(08).              COB03830
+           03 FILLER                            PIC X(03) VALUE SPACES. COB03840
+           03 TOT-CLAIM-LABEL                   PIC X(22) VALUE         COB03850
+                                              'CLAIMS WITH MISMATCHES'. COB03860
+           03 FILLER                            PIC X(44) VALUE SPACES. COB03870
+      *                                                                 COB03930
+      ******************************************************            COB03940
+      * HOLD AREA FOR CLAIM  AND LINE ITEM ID NUMBER       *            COB03950
+      ******************************************************            COB03960
+       01  HOLD-AREA.                                                   COB03970
+           03 CLAIM-HOLD-ID-NUM                  PIC X(17).             COB03980
+           03 LNITM-HOLD-AREA                    PIC X(1350).           COB03990
+           03 LNITM-HOLD-AREA-R REDEFINES LNITM-HOLD-AREA.              COB04000
+              05 LNITM-HOLD-ID-NUM OCCURS 450 TIMES PIC X(03).          COB04010
+      ************************                                          COB04030
+      * INTERFACE BUFFER 1   *                                          COB04040
+      ************************                                          COB04050
+      ************************
+      * INTERFACE BUFFER 1   *
+      ************************
+CHG250*01  WS-INTERFACE-AREA-1                   PIC X(35011).
+CHG250 01  WS-INTERFACE-AREA-1                   PIC X(35083).
+       01  WS-INTERFACE-AREA-1-REDEF REDEFINES                          OCE02620
+           WS-INTERFACE-AREA-1.                                         OCE02630
+      ******************************************************            OCE02640
+      * IOCE  , VERSION 25.1,INPUT BUFFER LAYOUT           *            OCE02650
+CHG250* COMMUNICATION INPUT AREAS SECTION 1. 35011 BYTES   * +72
+CHG250* COMMUNICATION INPUT AREAS SECTION 1. 35083 BYTES   *
+      ******************************************************            OCE02670
+00001         05 CI-CLAIM-IDENT-NUMBER          PIC X(17).
+00018         05 CI-AGE-IN-YEARS                PIC X(03).              OCE03030
+00021         05 CI-SEX-CODE                    PIC X(01).              OCE03040
+      *                                                                 OCE03050
+              05 CI-FR-THRU-DATES.                                      OCE03060
+00022            07 CI-FROM-DATE.                                       OCE03070
+                    09 CI-FROM-DATE-YYYY        PIC X(04).              OCE03080
+                    09 CI-FROM-DATE-MM          PIC X(02).              OCE03090
+                    09 CI-FROM-DATE-DD          PIC X(02).              OCE03100
+      *                                                                 OCE03110
+                 07 CI-THRU-DATE.                                       OCE03120
+00030               09 CI-THRU-DATE-YYYY        PIC X(04).              OCE03130
+                    09 CI-THRU-DATE-MM          PIC X(02).              OCE03140
+                    09 CI-THRU-DATE-DD          PIC X(02).              OCE03150
+      *                                                                 OCE03210
+00038         05 CI-BILL-TYPE                   PIC X(03).              OCE03230
+00041         05 CI-NPI-NUMBER                  PIC X(13).              OCE03240
+00054         05 CI-CMS-CERT-NUM                PIC X(06).              OCE03250
+00060         05 CI-PATIENT-STATUS-CODE         PIC X(02).              OCE03310
+00062         05 CI-OPPS-NONOPPS-FLAG           PIC X(01).              OCE03320
+      *                                                                 OCE03160
+00063         05 CI-OCCURRENCE-CODES            PIC X(60).
+00123         05 CI-COND-CODES                  PIC X(60).              OCE03170
+              05 CI-COND-CODES-R REDEFINES CI-COND-CODES.               OCE03180
+                 07 CI-CONDITION-CODES  OCCURS 30 TIMES.                OCE03190
+                    09 CI-CONDITION-CODE-X      PIC X(02).              OCE03200
+      ******************************************************            OCE02680
+      *  RVDX                3/8 BYTES  GIVING  24 BYTES   *            OCE02690
+00183 ******************************************************            OCE02700
+              05 CI-RVDX-CODES.                                         OCE02710
+                 07  CI-RVDX-CODE OCCURS 03 TIMES PIC X(08).            OCE02720
+      ******************************************************            OCE02680
+      *   PDX                1/8 BYTES  GIVING  08 BYTES   *            OCE02690
+00207 ******************************************************            OCE02700
+              05  CI-PDX-CODE                     PIC X(08).            OCE02720
+      ******************************************************            OCE02680
+      *  DIAGNOSIS CODES ARE 24/8 BYTES GIVING 192 BYTES   *            OCE02690
+00215 ******************************************************            OCE02700
+              05 CI-SDX-CODES.                                          OCE02710
+                 07  CI-SDX-CODE OCCURS 24 TIMES PIC X(08).             OCE02720
+                                                                        OCE02730
+      ******************************************************            OCE02680
+00407 * VALUE CODES/AMTS ARE 36/11 BYTES GIVING 396 BYTES  * +72        OCE02690
+      * VALUE CODES/AMTS ARE 36/13 BYTES GIVING 468 BYTES  *            OCE02690
+      ******************************************************            OCE02700
+CHG250*       05 CI-VC-AMOUNTS                  PIC X(396).
+CHG250        05 CI-VC-AMOUNTS                  PIC X(468).
+              05 CI-VC-AMOUNTS-R REDEFINES CI-VC-AMOUNTS.               OCE03180
+                 07 CI-VC-AMOUNTS-CODES  OCCURS 36 TIMES.               OCE03190
+                    09 CI-VALUE-CODE-X          PIC X(02).              OCE03200
+CHG250              09 CI-VALUE-CODE-AMOUNT     PIC X(11).              OCE03200
+CHG250*             09 CI-VALUE-CODE-AMOUNT     PIC X(09).              OCE03200
+00875         05 CI-CLM-RECEIPT-DATE.
+                 07 CI-RECEIPT-DATE-YYYY        PIC X(04).
+                 07 CI-RECEIPT-DATE-MM          PIC X(02).
+                 07 CI-RECEIPT-DATE-DD          PIC X(02).
+00883         05 CI-DEBUG-IND                   PIC X(01).
+00884 ******************************************************            OCE02750
+34200 * LINE ITEMS ARE 450/76 BYTES GIVING 34200 TOTAL     *
+      ******************************************************
+              05 CI-LINE-ITEMS.                                         OCE02780
+                 07 CI-LINE-ITEMS-M OCCURS 450 TIMES.                   OCE02790
+      ****************                                                  OCE02850
+      * SERVICE DATE *                                                  OCE02860
+      ****************                                                  OCE02870
+                    09 CI-SRVC-DATE-X.                                  OCE02880
+                       11 CI-SRVC-DATE-YYYY-X   PIC X(04).              OCE02890
+                       11 CI-SRVC-DATE-MM-X     PIC X(02).              OCE02900
+                       11 CI-SRVC-DATE-DD-X     PIC X(02).              OCE02910
+      *                                                                 OCE02920
+                    09 CI-REVENUE-CODE          PIC X(04).              OCE02930
+                    09 CI-PROCEDURE-CODE        PIC X(05).              OCE02800
+                    09 CI-HCPCS-MODIFIERS       PIC X(10).              OCE02810
+                    09 CI-HCPCS-MODIFIERS-R REDEFINES                   OCE02820
+                       CI-HCPCS-MODIFIERS.                              OCE02830
+                       11 CI-HCPCS-MODIFIER OCCURS 5 TIMES PIC X(02).   OCE02840
+                    09 CI-SERVICE-UNITS         PIC X(09).              OCE02940
+      *                                                                 OCE02950
+                    09 CI-CHARGES-X             PIC X(10).              OCE02960
+                    09 CI-CHARGES-N REDEFINES                           OCE02970
+                       CI-CHARGES-X             PIC 9(08)V99.           OCE02980
+                    09 CI-LINE-ITEM-ACTION-FLAG PIC X.                  OCE03020
+      ****************************
+      * CONTRACTOR BYPASS FIELDS * 29 BYTES
+      ****************************
+                    09 CI-CB-EDITS                   PIC X(12).
+                    09 CI-CB-EDITS-R REDEFINES CI-CB-EDITS.
+                       11 CI-CB-EDIT          OCCURS 04 TIMES.
+                          13 CI-CB-EDIT-NUM-X        PIC X(03).
+                    09 CI-CB-PAY-APC-ASC             PIC X(05).
+                    09 CI-CB-STATUS-IND              PIC X(02).
+                    09 CI-CB-PAY-IND                 PIC X(02).
+                    09 CI-CB-DISC-FORMULA            PIC X(01).
+                    09 CI-CB-DEN-REJ-FLAG            PIC X(01).
+                    09 CI-CB-PACK-FLAG               PIC X(01).
+                    09 CI-CB-PAY-ADJ-FLAG1           PIC X(02).
+                    09 CI-CB-PAY-METHD-FLAG          PIC X(01).
+                    09 CI-CB-PAY-ADJ-FLAG2           PIC X(02).
+      ************************
+      * INTERFACE BUFFER 2   *
+      ************************
+CHG250*01  WS-INTERFACE-AREA-2                   PIC X(097820).
+CHG250 01  WS-INTERFACE-AREA-2                   PIC X(097840).
+       01  WS-INTERFACE-AREA-2-REDEF REDEFINES                          OCE03380
+           WS-INTERFACE-AREA-2.                                         OCE03390
+      ******************************************************            OCE03400
+      * IOCE  , VERSION 25.0, OUTPUT BUFFER LAYOUT (97840)*             OCE03410
+      *            COMMUNICATION OUTPUT AREAS              *            OCE03420
+      ******************************************************            OCE03430
+           03 CO-INT-AREA-OTPT.                                         OCE03440
+000001        05 CO-CLAIM-IDENT-NUMBER          PIC X(17).
+000398****************************************************************  OCE04220
+000405* CLAIM RETURN BUFFER -             CLAIMPTR    - TABLE 5      *  OCE04230
+      ****************************************************************  OCE04240
+000018*       05 CO-CLM-RET-BUF                             PIC X(378). OCE04250
+CHG250        05 CO-CLM-RET-BUF                             PIC X(398). OCE04250
+              05 CO-CLM-RET-BUF-R REDEFINES CO-CLM-RET-BUF.             OCE04260
+                 07 CO-CLM-PROC-FLAG                        PIC X(01).  OCE04270
+                 07 CO-CLM-OVRALL-DISP                      PIC X(01).  OCE04310
+                 07 CO-CLM-REJ-DISP                         PIC X(01).  OCE04320
+                 07 CO-CLM-DEN-DISP                         PIC X(01).  OCE04330
+                 07 CO-CLM-RET-PROV-DISP                    PIC X(01).  OCE04340
+                 07 CO-CLM-SUSP-DISP                        PIC X(01).  OCE04350
+                 07 CO-CLM-LI-REJ-DISP                      PIC X(01).  OCE04360
+                 07 CO-CLM-LI-DEN-DISP                      PIC X(01).  OCE04370
+                 07 CO-CLM-REJ-REASON-X                     PIC X(12).  OCE04390
+                 07 CO-CLM-REJ-REASON-R REDEFINES CO-CLM-REJ-REASON-X.  OCE04400
+                    09 CO-CLM-REJ-REASON   OCCURS 04 TIMES  PIC X(03).  OCE04410
+      *                                                                 OCE04420
+                 07 CO-CLM-DEN-REASON-X                     PIC X(24).  OCE04430
+                 07 CO-CLM-DEN-REASON-R REDEFINES CO-CLM-DEN-REASON-X.  OCE04440
+                    09 CO-CLM-DEN-REASON   OCCURS 08 TIMES  PIC X(03).  OCE04450
+      *                                                                 OCE04460
+                 07 CO-CLM-RET-PROV-RSN-X                   PIC X(90).  OCE04470
+                 07 CO-CLM-RET-PROV-RSN-R REDEFINES                     OCE04480
+                                                CO-CLM-RET-PROV-RSN-X.  OCE04490
+                    09 CO-CLM-RET-PROV-RSN OCCURS 30 TIMES  PIC X(03).  OCE04500
+      *                                                                 OCE04510
+                 07 CO-CLM-SUSP-REASON-X                    PIC X(48).  OCE04520
+                 07 CO-CLM-SUSP-REASON-R REDEFINES                      OCE04530
+                                                CO-CLM-SUSP-REASON-X.   OCE04540
+                    09 CO-CLM-SUSP-REASON  OCCURS 16 TIMES  PIC X(03).  OCE04550
+      *                                                                 OCE04560
+                 07 CO-CLM-LI-REJ-REASON-X                  PIC X(36).  OCE04570
+                 07 CO-CLM-LI-REJ-REASON-R REDEFINES                    OCE04580
+                                              CO-CLM-LI-REJ-REASON-X.   OCE04590
+                    09 CO-CLM-LI-REJ-REASON OCCURS 12 TIMES PIC X(03).  OCE04600
+      *                                                                 OCE04610
+                 07 CO-CLM-LI-DEN-REASON-X                  PIC X(18).  OCE04620
+                 07 CO-CLM-LI-DEN-REASON-R REDEFINES                    OCE04630
+                                             CO-CLM-LI-DEN-REASON-X.    OCE04640
+                    09 CO-CLM-LI-DEN-REASON OCCURS 06 TIMES PIC X(03).  OCE04650
+      *                                                                 OCE04660
+                 07 CO-CLM-APC-RET-BUF-FLG                  PIC X(01).  OCE04670
+                 07 CO-CLM-VERSION-USED                     PIC X(08).  OCE04680
+                 07 CO-CLM-NOPPS-BILL-FLAG                  PIC X(01).  OCE04700
+      ****************************************************************
+CHG250* VALUE CODE/AMOUNTS. 11 BYTES X 10 OCCURRENCES                *
+CHG250* VALUE CODE/AMOUNTS. 13 BYTES X 10 OCCURRENCES                *
+      ****************************************************************
+CHG250           07 CO-VALUE-CODES-AMOUNTS                  PIC X(130).
+CHG250*          07 CO-VALUE-CODES-AMOUNTS                  PIC X(110).
+      ****************************************************************
+000020* PAYER CONDITION CODES. 2 BYTES X 10 OCCURRENCES              *
+000398****************************************************************
+                 07 CO-PAYER-COND-CODES                     PIC X(20).
+                 07 CO-CLAIM-RETURN-CODE                    PIC X(02).
+000692****************************************************************  OCE03450
+      * DX EDIT RETURN-BUFFER - DXEDITPTR - TABLE 3 28 * 24 BYTES    *  OCE03460
+      * FIRST 3 OCCURRANCES ARE FOR RVDX. PDX AND 24 SECONDARIESS    *  OCE03460
+001087****************************************************************  OCE03470
+000396        05 CO-DX-ED-RET-BUF                         PIC X(672).   OCE03480
+              05 CO-DX-ED-RET-BUF-R REDEFINES CO-DX-ED-RET-BUF.         OCE03490
+                 07 CO-DX-ED-RET-BUFFER  OCCURS 28 TIMES.               OCE03500
+                    09 CO-DX-ED-RET-X                     PIC X(24).    OCE03510
+                    09 CO-DX-ED-RET-R REDEFINES CO-DX-ED-RET-X.         OCE03520
+                       11 CO-DX-ED-RET   OCCURS 08 TIMES  PIC X(03).    OCE03530
+      *                                                                 OCE03540
+001090        05 CO-CLM-TOT-NUM-LINE-ITEM                PIC X(03).     OCE04280
+001091****************************************************************  OCE03980
+096750* APC RETURN BUFFER -       450 * 215 BYTES = 96750            *  OCE03990
+      ****************************************************************  OCE04000
+                 05 CO-APC-RET-BUFFER    OCCURS 450 TIMES.              OCE04030
+                    11 CO-APC-PAY-APC-ASC            PIC X(05).         OCE04070
+                    11 CO-APC-HCPCS-APC-ASC          PIC X(05).         OCE04080
+                    11 CO-APC-STATUS-IND             PIC X(02).         OCE04090
+                    11 CO-APC-PAY-IND                PIC X(02).         OCE04100
+                    11 CO-APC-DISC-FORMULA           PIC X(01).         OCE04110
+                    11 CO-APC-DEN-REJ-FLAG           PIC X(01).         OCE04120
+                    11 CO-APC-PACK-FLAG              PIC X(01).         OCE04130
+                    11 CO-APC-PAY-ADJ-FLAG1          PIC X(02).         OCE04140
+                    11 CO-APC-PAY-METHD-FLAG         PIC X(01).         OCE04150
+                    11 CO-APC-SERV-UNITS             PIC X(09).         OCE04160
+                    11 CO-SG-ED-RET-X                PIC X(90).         OCE03610
+                    11 CO-SG-ED-RET-R REDEFINES CO-SG-ED-RET-X.         OCE03620
+                       13 CO-SG-ED-RET   OCCURS 30 TIMES  PIC X(03).    OCE03630
+                    11 CO-APC-LIN-ITEM-FLAG          PIC X(01).         OCE04200
+                    11 CO-COMPOSITE-ADJ-FLAG         PIC X(02).         OCE04200
+                    11 CO-HCPCS-MODIFIER             PIC X(04).         OCE04200
+                    11 CO-APC-PAY-ADJ-FLAG2          PIC X(02).         OCE04140
+                    11 CO-MOD-ED-RET-X                  PIC X(60).      OCE03710
+                    11 CO-MOD-ED-RET-R REDEFINES CO-MOD-ED-RET-X.       OCE03720
+                       13 CO-MOD-ED-RET-8-R  OCCURS 05 TIMES.           OCE03730
+                          15 CO-MOD-ED-RET-8            PIC X(12).      OCE03740
+                          15 CO-MOD-ED-R-2-X REDEFINES CO-MOD-ED-RET-8. OCE03750
+                             17 CO-MOD-ED-RET OCCURS 04 TIMES PIC X(3). OCE03760
+                    11 CO-DTE-ED-RET-X                    PIC X(12).    OCE03840
+                    11 CO-DTE-ED-RET-R REDEFINES CO-DTE-ED-RET-X.       OCE03850
+                       13 CO-DTE-ED-RET  OCCURS 04 TIMES  PIC X(03).    OCE03860
+                    11 CO-REV-ED-RET-X                    PIC X(15).    OCE03940
+                    11 CO-REV-ED-RET-R REDEFINES CO-REV-ED-RET-X.       OCE03950
+                       13 CO-REV-ED-RET  OCCURS 05 TIMES  PIC X(03).    OCE03960
+      *                                                                 OCE04210
+      ******************************************************            COB06300
+      * PROGRAM EXECUTION                                  *            COB06310
+      ******************************************************            COB06320
+       PROCEDURE DIVISION.                                              COB06330
+       0100-MAINLINE.                                                   COB06340
+      ************************                                          COB06350
+      * OPEN INPUT / OUTPUT  *                                          COB06360
+      ************************                                          COB06370
+       0110-OPEN.                                                       COB06380
+           OPEN INPUT  INPUT-FILE                                       COB06400
+                OUTPUT PRINT.                                           COB06410
+           IF IN-STAT > '00'                                            COB06420
+              GO TO 0999-EXIT.                                          COB06430
+           MOVE 0 TO TOT-CLAIM-CNT TOT-REC-CNT TOT-MIS-CLAIM-CNT.       COB06440
+      ************************                                          COB06450
+      * CONTROL PARAGRAPH    *                                          COB06460
+      ************************                                          COB06470
+           PERFORM 310-READ-PROCESS     THRU   310-EXIT                 COB06480
+                   UNTIL EOF-FLAG = 'Y'.                                COB06490
+           GO TO 0999-EXIT.                                             COB06500
+      *                                                                 COB06510
+      ******************************                                    COB06520
+      * READ AND CALL PROCESS MOD  *                                    COB06530
+      ******************************                                    COB06540
+       310-READ-PROCESS.                                                COB06550
+           READ INPUT-FILE                                              COB06560
+                AT END MOVE 'Y' TO EOF-FLAG                             COB06570
+                       GO TO 310-EXIT.                                  COB06580
+           PERFORM 20000-EVALUATE-TYPE          THRU 29999-EXIT.        COB06590
+       310-EXIT.                                                        COB06600
+      *                                                                 COB06610
+      ******************************                                    COB06620
+      * EOF, CLEAR AND CLOSE FILES *                                    COB06630
+      ******************************                                    COB06640
+       0999-EXIT.                                                       COB06650
+           MOVE SPACES TO PRINT-LINE.                                   COB06660
+           COMPUTE TOT-CLAIM-NUM = TOT-CLAIM-CNT.                       COB06670
+           COMPUTE TOT-REC-NUM   = TOT-REC-CNT.                         COB06680
+           MOVE TOTAL-LAYOUT TO PRINT-LINE.                             COB06690
+           PERFORM 80000-WRITE          THRU 89999-EXIT.                COB06700
+           MOVE SPACES TO PRINT-LINE.                                   COB06660
+           COMPUTE TOT-CLAIM-MISMATCH-NUM = TOT-MIS-CLAIM-CNT           COB06670
+           MOVE MISMATCH-COUNT-LAYOUT TO PRINT-LINE.                    COB06690
+           PERFORM 80000-WRITE          THRU 89999-EXIT.                COB06700
+           CLOSE INPUT-FILE PRINT.                                      COB06710
+           MOVE ZEROS TO RETURN-CODE.                                   COB06720
+           STOP RUN.                                                    COB06730
+      *                                                                 COB06740
+      ******************************************************            COB06750
+      * EXTERNAL PROGRAM CALLS                             *            COB06760
+      ******************************************************            COB06770
+       10000-CALLS.                                                     COB06780
+      ******************************************************            COB06790
+      * INPUT BUFFER  AREA                                 *            COB06800
+      ******************************************************            COB06810
+      *    DISPLAY 'CI-DX-CODES           ' CI-DX-CODES
+      *    DISPLAY 'CI-LINE-ITEMS-M(1)    ' CI-LINE-ITEMS-M(1)
+      *    DISPLAY 'CI-LINE-ITEM-ACT-FLGS ' CI-LINE-ITEM-ACTION-FLAGS
+      *    DISPLAY 'CI-AGE-IN-YEARS       ' CI-AGE-IN-YEARS
+      *    DISPLAY 'CI-SEX-CODE           ' CI-SEX-CODE
+      *    DISPLAY 'CI-FR-THRU-DATES      ' CI-FR-THRU-DATES
+      *    DISPLAY 'CI-COND-CODES         ' CI-COND-CODES
+      *    DISPLAY 'CI-BILL-TYPE          ' CI-BILL-TYPE
+      *    DISPLAY 'CI-NPI-NUMBER,        ' CI-NPI-NUMBER
+      *    DISPLAY 'CI-CMS-CERT-NUM       ' CI-CMS-CERT-NUM
+      *    DISPLAY 'CI-PATIENT-STATUS-CDE ' CI-PATIENT-STATUS-CODE
+      *    DISPLAY 'CI-OPPS-NONOPPS-FLAG  ' CI-OPPS-NONOPPS-FLAG
+      *    DISPLAY 'CI-OCCURRENCE-CODES   ' CI-OCCURRENCE-CODES
+      *    DISPLAY 'CI-VC-AMOUNTS         ' CI-VC-AMOUNTS
+      *    DISPLAY 'CI-CLM-RECEIPT-DATE   ' CI-CLM-RECEIPT-DATE
+      *    DISPLAY 'CLAIM ID - WS-SUB1    ' CLAIM-HOLD-ID-NUM ' '
+      *                                  WS-SUB1
+      *    DISPLAY 'CI-CB-EDITS        ' CI-CB-EDITS        (WS-SUB1).  COB07970
+      *    DISPLAY 'CI-CB-PAY-APC-ASC  ' CI-CB-PAY-APC-ASC  (WS-SUB1).  COB07980
+      *    DISPLAY 'CI-CB-STATUS-IND   ' CI-CB-STATUS-IND   (WS-SUB1).  COB07990
+      *    DISPLAY 'CI-CB-PAY-IND      ' CI-CB-PAY-IND      (WS-SUB1).  COB08000
+      *    DISPLAY 'CI-CB-DISC-FORMULA ' CI-CB-DISC-FORMULA (WS-SUB1).  COB08010
+      *    DISPLAY 'CI-CB-DEN-REJ-FLAG ' CI-CB-DEN-REJ-FLAG (WS-SUB1).  COB08020
+      *    DISPLAY 'CI-CB-PACK-FLAG    ' CI-CB-PACK-FLAG    (WS-SUB1).  COB08030
+      *    DISPLAY 'CI-CB-PAY-ADJ-FLAG1' CI-CB-PAY-ADJ-FLAG1(WS-SUB1).  COB08040
+      *    DISPLAY 'CI-CB-PAY-METHD-FLAG       '                        COB07970
+      *                                 CI-CB-PAY-METHD-FLAG(WS-SUB1).
+      *    DISPLAY 'CI-CB-PAY-ADJ-FLAG2' CI-CB-PAY-ADJ-FLAG2(WS-SUB1).  COB08040
+           IF DISP-IND = 'Y'
+              DISPLAY 'COBTEST   IS ABOUT TO CALL OCE251JV'.
+      *    DISPLAY 'IN-CLAIM-IDENT-NUMBER ' IN-CLAIM-IDENT-NUMBER
+           CALL OCE251JV  USING   WS-INTERFACE-AREA-1
+                                  WS-INTERFACE-AREA-2.
+           IF DISP-IND = 'Y'
+              DISPLAY 'RETURNED FROM OCE251JV TO COBTEST '.
+      *     DISPLAY 'CO-DX-ED-RET-BUF ' CO-DX-ED-RET-BUF
+      *     DISPLAY 'CO-SG-ED-RET-BUF ' CO-SG-ED-RET-BUF
+      *     DISPLAY 'CO-MOD-ED-ET-BUF ' CO-MOD-ED-RET-BUF
+      *     DISPLAY 'CO-REV-ED-ET-BUF ' CO-REV-ED-RET-BUF
+      *     DISPLAY 'CO-APC-RET-BUFFR ' CO-APC-ASC-RET-BUF
+      *     DISPLAY 'CO-CLM-RET-BUFFR ' CO-CLM-RET-BUF
+      *     DISPLAY 'RETURN CODE      ' RETURN-CODE
+      *     DISPLAY 'CALL RETURN '.
+       19999-EXIT. EXIT.                                                COB07120
+      *                                                                 COB07130
+      ******************************************************            COB07140
+      * EVALUATE RECORD TYPE                               *            COB07150
+      ******************************************************            COB07160
+       20000-EVALUATE-TYPE.                                             COB07170
+           ADD 1 TO TOT-REC-CNT.                                        COB07180
+           EVALUATE IN-CLAIM-TYPE                                       COB07190
+              WHEN 'C'   PERFORM 21000-LOAD-CLAIM-REC  THRU 21999-EXIT  COB07200
+              WHEN 'D'   PERFORM 22000-LOAD-DIAG-REC   THRU 22999-EXIT  COB07210
+              WHEN 'E'   PERFORM 23000-LOAD-VC-AMT-REC THRU 23999-EXIT
+              WHEN 'F'   PERFORM 24000-LOAD-VC-AMT-REC THRU 24999-EXIT
+              WHEN 'L'   PERFORM 26000-LOAD-LINE-ITEM  THRU 26999-EXIT  COB07220
+              WHEN 'M'   PERFORM 31000-COMPARE-M-REC   THRU 31999-EXIT  COB07230
+              WHEN 'N'   PERFORM 32000-COMPARE-N-REC   THRU 32999-EXIT  COB07240
+              WHEN 'O'   PERFORM 33000-COMPARE-O-REC   THRU 33999-EXIT  COB07250
+              WHEN 'P'   PERFORM 34000-COMPARE-P-REC   THRU 34999-EXIT  COB07260
+              WHEN 'Q'   PERFORM 35000-COMPARE-Q-REC   THRU 35999-EXIT  COB07270
+              WHEN 'R'   PERFORM 36000-COMPARE-R-REC   THRU 36999-EXIT  COB07280
+              WHEN 'S'   PERFORM 37000-COMPARE-S-REC   THRU 37999-EXIT  COB07290
+              WHEN OTHER GO TO 29999-EXIT                               COB07300
+           END-EVALUATE.                                                COB07310
+           GO TO 29999-EXIT.                                            COB07320
+      ******************************************************            COB07330
+      * LOAD CLAIM RECORD                                  *            COB07340
+      ******************************************************            COB07350
+       21000-LOAD-CLAIM-REC.                                            COB07360
+           PERFORM 90000-INITIALIZE                   THRU 99999-EXIT.  COB07370
+           MOVE IN-CLAIM-IDENT-NUMBER      TO CLAIM-HOLD-ID-NUM.        COB07380
+           MOVE CLAIM-AGE                  TO CI-AGE-IN-YEARS.          COB07400
+           MOVE CLAIM-SEX                  TO CI-SEX-CODE.              COB07410
+           MOVE CLAIM-BEGIN-DATE           TO CI-FROM-DATE.             COB07420
+           MOVE CLAIM-THRU-DATE            TO CI-THRU-DATE.             COB07430
+           MOVE CLAIM-CONDITION-CODES      TO CI-COND-CODES.            COB07450
+           MOVE CLAIM-BILL-TYPE            TO CI-BILL-TYPE.             COB07600
+           MOVE CLAIM-NPI-MEDCR-PROV-NUM   TO CI-NPI-NUMBER.            COB07610
+           MOVE CLAIM-CMS-CERT-NUM         TO CI-CMS-CERT-NUM.          COB07620
+           MOVE CLAIM-PATIENT-STATUS-CODE  TO CI-PATIENT-STATUS-CODE.   COB07630
+           MOVE CLAIM-OPPS-NONOPPS-FLAG    TO CI-OPPS-NONOPPS-FLAG.     COB07640
+           MOVE CLAIM-OCCURRENCE-CODES     TO CI-OCCURRENCE-CODES.      COB07450
+           MOVE CLAIM-RECEIPT-DATE         TO CI-CLM-RECEIPT-DATE.      COB07420
+       21999-EXIT. EXIT.                                                COB07650
+      *                                                                 COB07660
+      ******************************************************            COB07670
+      * LOAD DIAGNOSES CODES RECORD                        *            COB07680
+      ******************************************************            COB07690
+       22000-LOAD-DIAG-REC.                                             COB07700
+      *    MOVE DIAG-CODES    TO CI-DX-CODES.                           COB07710
+           MOVE RVDX01        TO CI-RVDX-CODE (1).
+           MOVE RVDX02        TO CI-RVDX-CODE (2).
+           MOVE RVDX03        TO CI-RVDX-CODE (3).
+           MOVE PDX           TO CI-PDX-CODE.
+           MOVE SPACES        TO CI-SDX-CODES.
+      *    DISPLAY 'CI-SDX-CODES ' CI-SDX-CODES.
+           MOVE SDX-CODES     TO CI-SDX-CODES.
+       22999-EXIT. EXIT.                                                COB07870
+      *                                                                 COB07880
+      ******************************************************
+      * LOAD VALUE CODES AND AMOUNTS RECORD 1 - E RECORD   *
+      ******************************************************
+       23000-LOAD-VC-AMT-REC.
+           MOVE VALUE-CODES-AMOUNTS-E  TO CI-VC-AMOUNTS.
+       23999-EXIT. EXIT.                                                COB07870
+      *                                                                 COB07880
+      ******************************************************
+      * LOAD VALUE CODES AND AMOUNTS RECORD 2 - F RECORD   *
+      ******************************************************
+       24000-LOAD-VC-AMT-REC.
+CHG250*    MOVE VALUE-CODES-AMOUNTS-F TO CI-VC-AMOUNTS(265:132).
+CHG250     MOVE VALUE-CODES-AMOUNTS-F TO CI-VC-AMOUNTS(274:195).
+       24999-EXIT. EXIT.                                                COB07870
+      *                                                                 COB07880
+      ******************************************************            COB07890
+      * LOAD LINE ITEM RECORDS                             *            COB07900
+      ******************************************************            COB07910
+       26000-LOAD-LINE-ITEM.                                            COB07920
+           ADD  1 TO WS-SUB1.                                           COB07930
+           ADD  1 TO L-REC-CNT.                                         COB07940
+           IF L-REC-CNT               > MAX-LINE-ITEM-CNT               COB07950
+              GO TO 26999-EXIT.                                         COB07960
+           MOVE LNITM-HCPCS-PROC-CODE TO CI-PROCEDURE-CODE  (WS-SUB1).  COB07970
+           MOVE LNITM-MODIFIERS       TO CI-HCPCS-MODIFIERS (WS-SUB1).  COB07980
+           MOVE LNITM-SERVICE-DATE    TO CI-SRVC-DATE-X     (WS-SUB1).  COB07990
+           MOVE LNITM-REV-CODE        TO CI-REVENUE-CODE    (WS-SUB1).  COB08000
+           MOVE LNITM-SERV-UNIT       TO CI-SERVICE-UNITS   (WS-SUB1).  COB08010
+           MOVE LNITM-CHARGES-X       TO CI-CHARGES-X       (WS-SUB1).  COB08020
+           MOVE LNITM-ACTION-FLAG     TO                                COB08030
+                                   CI-LINE-ITEM-ACTION-FLAG (WS-SUB1).  COB08030
+           MOVE LNITM-ID-NUM          TO LNITM-HOLD-ID-NUM  (WS-SUB1).  COB08040
+           MOVE LNITM-CB-EDITS        TO CI-CB-EDITS        (WS-SUB1).  COB07970
+           MOVE LNITM-CB-PAY-APC-ASC  TO CI-CB-PAY-APC-ASC  (WS-SUB1).  COB07980
+           MOVE LNITM-CB-STATUS-IND   TO CI-CB-STATUS-IND   (WS-SUB1).  COB07990
+           MOVE LNITM-CB-PAY-IND      TO CI-CB-PAY-IND      (WS-SUB1).  COB08000
+           MOVE LNITM-CB-DISC-FORMULA TO CI-CB-DISC-FORMULA (WS-SUB1).  COB08010
+           MOVE LNITM-CB-DEN-REJ-FLAG TO CI-CB-DEN-REJ-FLAG (WS-SUB1).  COB08020
+           MOVE LNITM-CB-PACK-FLAG    TO CI-CB-PACK-FLAG    (WS-SUB1).  COB08030
+           MOVE LNITM-CB-PAY-ADJ-FLAG1                                  COB08040
+                                      TO CI-CB-PAY-ADJ-FLAG1(WS-SUB1).  COB08040
+           MOVE LNITM-CB-PAY-METHD-FLAG  TO                             COB07970
+                                        CI-CB-PAY-METHD-FLAG(WS-SUB1).
+           MOVE LNITM-CB-PAY-ADJ-FLAG2                                  COB08040
+                                      TO CI-CB-PAY-ADJ-FLAG2(WS-SUB1).  COB08040
+       26999-EXIT. EXIT.                                                COB08050
+      *                                                                 COB08060
+       29999-EXIT. EXIT.                                                COB08070
+      *                                                                 COB08080
+      ******************************************************            COB08090
+      * COMPARE OUTPUT RECORD LAYOUT AND CALL WRITE MODULE *            COB08100
+      ******************************************************            COB08110
+       30000-COMPARE-RECORDS.                                           COB08120
+       31000-COMPARE-M-REC.                                             COB08130
+           PERFORM 10000-CALLS                      THRU 19999-EXIT.    COB08140
+           ADD 1 TO TOT-CLAIM-CNT.                                      COB08150
+           MOVE SPACES TO OUT-CLAIM-DATA.                               COB08160
+           MOVE 'M'    TO OUT-CLAIM-TYPE.                               COB08170
+           MOVE CLAIM-HOLD-ID-NUM     TO OUT-CLAIM-IDENT-NUMBER         COB08180
+                                         CLAIM-ID.                      COB08190
+           MOVE CO-CLM-PROC-FLAG      TO OUT-M-CLM-PROC-FLAG.           COB08200
+           IF CO-CLM-PROC-FLAG = '9'                                    COB08210
+              MOVE 'Y' TO EOF-FLAG                                      COB08220
+              MOVE '*** CLAIM PROCESSED FLAG IS 9 ***' TO PRINT-LINE    COB08230
+              PERFORM 80000-WRITE      THRU 89999-EXIT                  COB08240
+              GO TO 31999-EXIT.                                         COB08250
+           MOVE CO-CLM-OVRALL-DISP     TO OUT-M-CLM-OVRALL-DISP.        COB08260
+           MOVE CO-CLM-REJ-DISP        TO OUT-M-CLM-REJ-DISP.           COB08270
+           MOVE CO-CLM-DEN-DISP        TO OUT-M-CLM-DEN-DISP.           COB08280
+           MOVE CO-CLM-RET-PROV-DISP   TO OUT-M-CLM-RET-PROV-DISP.      COB08290
+           MOVE CO-CLM-SUSP-DISP       TO OUT-M-CLM-SUSP-DISP.          COB08300
+           MOVE CO-CLM-LI-REJ-DISP     TO OUT-M-CLM-LI-REJ-DISP.        COB08310
+           MOVE CO-CLM-LI-DEN-DISP     TO OUT-M-CLM-LI-DEN-DISP.        COB08320
+           MOVE CO-CLM-REJ-REASON-X    TO OUT-M-CLM-REJ-REASON.         COB08330
+           MOVE CO-CLM-DEN-REASON-X    TO OUT-M-CLM-DEN-REASON.         COB08340
+           MOVE CO-CLM-RET-PROV-RSN-X  TO OUT-M-CLM-RET-PROV-RSN.       COB08350
+           MOVE CO-VALUE-CODES-AMOUNTS TO OUT-M-VALUE-CODES-AMOUNTS.    COB08350
+           IF IN-M-CLAIM-REC = OUT-M-CLAIM-REC                          COB08360
+              GO TO 31999-EXIT.                                         COB08370
+           MOVE 'Y' TO MISMATCH-IND.                                    COB08380
+           MOVE CLAIM-OUTPUT-LAYOUT   TO PRINT-LINE.                    COB08390
+           PERFORM 80000-WRITE        THRU 89999-EXIT.                  COB08400
+           IF IN-M-CLM-PROC-FLAG NOT EQUAL OUT-M-CLM-PROC-FLAG          COB08410
+              MOVE 'CLM PROC FLAG'       TO   ACTUAL-FIELD-LABEL        COB08420
+                                            EXPECTED-FIELD-LABEL        COB08430
+              MOVE IN-M-CLM-PROC-FLAG    TO EXPECTED-FIELD              COB08440
+              MOVE OUT-M-CLM-PROC-FLAG   TO   ACTUAL-FIELD              COB08450
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB08460
+           IF IN-M-CLM-OVRALL-DISP NOT EQUAL OUT-M-CLM-OVRALL-DISP      COB08470
+              MOVE 'CLM OVRL DISP'       TO   ACTUAL-FIELD-LABEL        COB08480
+                                            EXPECTED-FIELD-LABEL        COB08490
+              MOVE IN-M-CLM-OVRALL-DISP  TO EXPECTED-FIELD              COB08500
+              MOVE OUT-M-CLM-OVRALL-DISP TO   ACTUAL-FIELD              COB08510
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB08520
+           IF IN-M-CLM-REJ-DISP NOT EQUAL OUT-M-CLM-REJ-DISP            COB08530
+              MOVE 'CLM REJ  DISP'       TO   ACTUAL-FIELD-LABEL        COB08540
+                                            EXPECTED-FIELD-LABEL        COB08550
+              MOVE IN-M-CLM-REJ-DISP     TO EXPECTED-FIELD              COB08560
+              MOVE OUT-M-CLM-REJ-DISP    TO   ACTUAL-FIELD              COB08570
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB08580
+           IF IN-M-CLM-DEN-DISP NOT EQUAL OUT-M-CLM-DEN-DISP            COB08590
+              MOVE 'CLM DEN  DISP'       TO   ACTUAL-FIELD-LABEL        COB08600
+                                            EXPECTED-FIELD-LABEL        COB08610
+              MOVE IN-M-CLM-DEN-DISP     TO EXPECTED-FIELD              COB08620
+              MOVE OUT-M-CLM-DEN-DISP    TO   ACTUAL-FIELD              COB08630
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB08640
+           IF IN-M-CLM-RET-PROV-DISP NOT EQUAL OUT-M-CLM-RET-PROV-DISP  COB08650
+              MOVE 'CLM PROV DISP'       TO   ACTUAL-FIELD-LABEL        COB08660
+                                            EXPECTED-FIELD-LABEL        COB08670
+              MOVE IN-M-CLM-RET-PROV-DISP  TO EXPECTED-FIELD            COB08680
+              MOVE OUT-M-CLM-RET-PROV-DISP TO ACTUAL-FIELD              COB08690
+              PERFORM 70000-WRITE          THRU 79999-EXIT.             COB08700
+           IF IN-M-CLM-SUSP-DISP NOT EQUAL OUT-M-CLM-SUSP-DISP          COB08710
+              MOVE 'CLM SUSP DISP'     TO ACTUAL-FIELD-LABEL            COB08720
+                                         EXPECTED-FIELD-LABEL           COB08730
+              MOVE  IN-M-CLM-SUSP-DISP TO EXPECTED-FIELD                COB08740
+              MOVE OUT-M-CLM-SUSP-DISP TO ACTUAL-FIELD                  COB08750
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB08760
+           IF IN-M-CLM-LI-REJ-DISP NOT EQUAL OUT-M-CLM-LI-REJ-DISP      COB08770
+              MOVE 'C LI REJ DISP'       TO ACTUAL-FIELD-LABEL          COB08780
+                                            EXPECTED-FIELD-LABEL        COB08790
+              MOVE  IN-M-CLM-LI-REJ-DISP TO EXPECTED-FIELD              COB08800
+              MOVE OUT-M-CLM-LI-REJ-DISP TO ACTUAL-FIELD                COB08810
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB08820
+           IF IN-M-CLM-LI-DEN-DISP NOT EQUAL OUT-M-CLM-LI-DEN-DISP      COB08830
+              MOVE 'C LI DEN DISP'       TO ACTUAL-FIELD-LABEL          COB08840
+                                            EXPECTED-FIELD-LABEL        COB08850
+              MOVE  IN-M-CLM-LI-DEN-DISP TO EXPECTED-FIELD              COB08860
+              MOVE OUT-M-CLM-LI-DEN-DISP TO ACTUAL-FIELD                COB08870
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB08880
+           IF IN-M-CLM-REJ-REASON   NOT EQUAL OUT-M-CLM-REJ-REASON      COB08890
+              MOVE 'CLM REJ REASN'      TO ACTUAL-FIELD-LABEL           COB08900
+                                           EXPECTED-FIELD-LABEL         COB08910
+              MOVE IN-M-CLM-REJ-REASON  TO EXPECTED-FIELD               COB08920
+              MOVE OUT-M-CLM-REJ-REASON TO ACTUAL-FIELD                 COB08930
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB08940
+           IF IN-M-CLM-DEN-REASON   NOT EQUAL OUT-M-CLM-DEN-REASON      COB08950
+              MOVE 'CLM DEN REASN'      TO ACTUAL-FIELD-LABEL           COB08960
+                                           EXPECTED-FIELD-LABEL         COB08970
+              MOVE IN-M-CLM-DEN-REASON  TO EXPECTED-FIELD               COB08980
+              MOVE OUT-M-CLM-DEN-REASON TO ACTUAL-FIELD                 COB08990
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB09000
+           IF IN-M-CLM-RET-PROV-RSN NOT EQUAL OUT-M-CLM-RET-PROV-RSN    COB09010
+              MOVE 'CLM PRV REASN'        TO ACTUAL-FIELD-LABEL         COB09020
+                                             EXPECTED-FIELD-LABEL       COB09030
+              MOVE IN-M-CLM-RET-PROV-RSN  TO EXPECTED-FIELD             COB09040
+              MOVE OUT-M-CLM-RET-PROV-RSN TO ACTUAL-FIELD               COB09050
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB09060
+CHG250     IF IN-M-VALUE-CODES-AMOUNTS (1:65) NOT EQUAL                 COB09010
+                                       OUT-M-VALUE-CODES-AMOUNTS (1:65)
+              MOVE 'CLM VAL C/AMT  1-65'     TO ACTUAL-FIELD-LABEL      COB09020
+                                                EXPECTED-FIELD-LABEL    COB09030
+              MOVE IN-M-VALUE-CODES-AMOUNTS (1:65) TO EXPECTED-FIELD    COB09040
+              MOVE OUT-M-VALUE-CODES-AMOUNTS(1:65) TO ACTUAL-FIELD      COB09050
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB09060
+           IF IN-M-VALUE-CODES-AMOUNTS (66:65) NOT EQUAL                COB09010
+                                       OUT-M-VALUE-CODES-AMOUNTS(66:65)
+              MOVE 'CLM VAL C/AMT 66-130'    TO ACTUAL-FIELD-LABEL      COB09020
+                                                EXPECTED-FIELD-LABEL    COB09030
+              MOVE IN-M-VALUE-CODES-AMOUNTS (66:65) TO EXPECTED-FIELD   COB09040
+              MOVE OUT-M-VALUE-CODES-AMOUNTS(66:65) TO ACTUAL-FIELD     COB09050
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB09060
+       31999-EXIT. EXIT.                                                COB09070
+      *                                                                 COB09080
+       32000-COMPARE-N-REC.                                             COB09090
+           MOVE SPACES TO OUT-CLAIM-DATA.                               COB09100
+           MOVE 'N'    TO OUT-CLAIM-TYPE.                               COB09110
+           MOVE CLAIM-HOLD-ID-NUM        TO OUT-CLAIM-IDENT-NUMBER.     COB09120
+           MOVE CO-CLM-SUSP-REASON-X     TO OUT-N-CLM-SUSP-REASON.      COB09130
+           MOVE CO-CLM-LI-REJ-REASON-X   TO OUT-N-CLM-LI-REJ-REASON.    COB09140
+           MOVE CO-CLM-LI-DEN-REASON-X   TO OUT-N-CLM-LI-DEN-REASON.    COB09150
+           MOVE CO-CLM-APC-RET-BUF-FLG   TO                             COB09160
+                                        OUT-N-CLM-APC-ASC-RET-BUF-FLG.  COB09160
+           MOVE CI-NPI-NUMBER            TO OUT-N-NPI-MEDCR-PROV-NUM.   COB09170
+           MOVE CI-CMS-CERT-NUM          TO OUT-N-CMS-CERT-NUM.         COB09180
+           MOVE CO-CLM-TOT-NUM-LINE-ITEM TO OUT-N-TOT-NUM-LINE-ITEM.    COB09190
+           MOVE CO-CLM-VERSION-USED      TO OUT-N-VERSION-USED.         COB09200
+           MOVE CI-PATIENT-STATUS-CODE   TO OUT-N-PAT-STATUS-CODE.      COB09210
+           MOVE CI-OPPS-NONOPPS-FLAG     TO OUT-N-OPPS-NONOPPS-FLAG.    COB09220
+           MOVE CO-CLM-NOPPS-BILL-FLAG   TO OUT-N-NOPPS-BILL-FLAG.      COB09220
+           MOVE CO-PAYER-COND-CODES      TO OUT-N-PAYER-COND-CODES.     COB09220
+           MOVE CO-CLAIM-RETURN-CODE     TO OUT-N-CLAIM-RETURN-CODE.    COB09220
+           IF IN-N-CLAIM-REC = OUT-N-CLAIM-REC                          COB09230
+              GO TO 32999-EXIT.                                         COB09240
+           IF MISMATCH-IND = 'N'                                        COB09250
+              MOVE 'Y' TO MISMATCH-IND                                  COB09260
+              MOVE CLAIM-OUTPUT-LAYOUT   TO PRINT-LINE                  COB09270
+              PERFORM 80000-WRITE        THRU 89999-EXIT.               COB09280
+           IF IN-N-CLM-SUSP-REASON NOT EQUAL OUT-N-CLM-SUSP-REASON      COB09290
+              MOVE 'N SUSP REASON'       TO ACTUAL-FIELD-LABEL          COB09300
+                                            EXPECTED-FIELD-LABEL        COB09310
+              MOVE IN-N-CLM-SUSP-REASON  TO EXPECTED-FIELD              COB09320
+              MOVE OUT-N-CLM-SUSP-REASON TO ACTUAL-FIELD                COB09330
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB09340
+           IF IN-N-CLM-LI-REJ-REASON NOT EQUAL OUT-N-CLM-LI-REJ-REASON  COB09350
+              MOVE 'N LI REJ RSON'         TO ACTUAL-FIELD-LABEL        COB09360
+                                              EXPECTED-FIELD-LABEL      COB09370
+              MOVE IN-N-CLM-LI-REJ-REASON  TO EXPECTED-FIELD            COB09380
+              MOVE OUT-N-CLM-LI-REJ-REASON TO ACTUAL-FIELD              COB09390
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB09400
+           IF IN-N-CLM-LI-DEN-REASON NOT EQUAL OUT-N-CLM-LI-DEN-REASON  COB09410
+              MOVE 'N LI DEN RSON'         TO ACTUAL-FIELD-LABEL        COB09420
+                                              EXPECTED-FIELD-LABEL      COB09430
+              MOVE IN-N-CLM-LI-DEN-REASON  TO EXPECTED-FIELD            COB09440
+              MOVE OUT-N-CLM-LI-DEN-REASON TO ACTUAL-FIELD              COB09450
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB09460
+           IF IN-N-CLM-APC-ASC-RET-BUF-FLG   NOT EQUAL                  COB09470
+                                       OUT-N-CLM-APC-ASC-RET-BUF-FLG    COB09480
+              MOVE 'N APCASC  FLG'                TO ACTUAL-FIELD-LABEL COB09490
+                                                   EXPECTED-FIELD-LABEL COB09500
+              MOVE  IN-N-CLM-APC-ASC-RET-BUF-FLG  TO EXPECTED-FIELD     COB09510
+              MOVE OUT-N-CLM-APC-ASC-RET-BUF-FLG  TO ACTUAL-FIELD       COB09520
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB09530
+           IF IN-N-NPI-MEDCR-PROV-NUM    NOT EQUAL                      COB09540
+                                       OUT-N-NPI-MEDCR-PROV-NUM         COB09550
+              MOVE 'N NPI PRV NUM'         TO ACTUAL-FIELD-LABEL        COB09560
+                                              EXPECTED-FIELD-LABEL      COB09570
+              MOVE  IN-N-NPI-MEDCR-PROV-NUM   TO EXPECTED-FIELD         COB09580
+              MOVE OUT-N-NPI-MEDCR-PROV-NUM   TO ACTUAL-FIELD           COB09590
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB09600
+           IF IN-N-CMS-CERT-NUM NOT EQUAL                               COB09610
+                                       OUT-N-CMS-CERT-NUM               COB09620
+              MOVE 'N CMS CERT NUM'        TO ACTUAL-FIELD-LABEL        COB09630
+                                              EXPECTED-FIELD-LABEL      COB09640
+              MOVE  IN-N-CMS-CERT-NUM  TO EXPECTED-FIELD                COB09650
+              MOVE OUT-N-CMS-CERT-NUM  TO ACTUAL-FIELD                  COB09660
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB09670
+           IF IN-N-TOT-NUM-LINE-ITEM     NOT EQUAL                      COB09680
+                                       OUT-N-TOT-NUM-LINE-ITEM          COB09690
+              MOVE 'N TOT NUM LTM'         TO ACTUAL-FIELD-LABEL        COB09700
+                                              EXPECTED-FIELD-LABEL      COB09710
+              MOVE  IN-N-TOT-NUM-LINE-ITEM TO EXPECTED-FIELD            COB09720
+              MOVE OUT-N-TOT-NUM-LINE-ITEM TO ACTUAL-FIELD              COB09730
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB09740
+           IF IN-N-VERSION-USED          NOT EQUAL                      COB09750
+                                       OUT-N-VERSION-USED               COB09760
+              MOVE 'N VRSION USED'         TO ACTUAL-FIELD-LABEL        COB09770
+                                              EXPECTED-FIELD-LABEL      COB09780
+              MOVE  IN-N-VERSION-USED      TO EXPECTED-FIELD            COB09790
+              MOVE OUT-N-VERSION-USED      TO ACTUAL-FIELD              COB09800
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB09810
+           IF IN-N-PAT-STATUS-CODE       NOT EQUAL                      COB09820
+                                       OUT-N-PAT-STATUS-CODE            COB09830
+              MOVE 'N PAT. STATUS'         TO ACTUAL-FIELD-LABEL        COB09840
+                                              EXPECTED-FIELD-LABEL      COB09850
+              MOVE  IN-N-PAT-STATUS-CODE   TO EXPECTED-FIELD            COB09860
+              MOVE OUT-N-PAT-STATUS-CODE   TO ACTUAL-FIELD              COB09870
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB09880
+           IF IN-N-OPPS-NONOPPS-FLAG     NOT EQUAL                      COB09890
+                                       OUT-N-OPPS-NONOPPS-FLAG          COB09900
+              MOVE 'N OPPS/NON FL'         TO ACTUAL-FIELD-LABEL        COB09910
+                                              EXPECTED-FIELD-LABEL      COB09920
+              MOVE  IN-N-OPPS-NONOPPS-FLAG TO EXPECTED-FIELD            COB09930
+              MOVE OUT-N-OPPS-NONOPPS-FLAG TO ACTUAL-FIELD              COB09940
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB09950
+           IF IN-N-NOPPS-BILL-FLAG       NOT EQUAL                      COB09890
+                                       OUT-N-NOPPS-BILL-FLAG            COB09900
+              MOVE 'N NOPPS BIL FL'        TO ACTUAL-FIELD-LABEL        COB09910
+                                            EXPECTED-FIELD-LABEL        COB09920
+              MOVE  IN-N-NOPPS-BILL-FLAG   TO EXPECTED-FIELD            COB09930
+              MOVE OUT-N-NOPPS-BILL-FLAG   TO ACTUAL-FIELD              COB09940
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB09950
+           IF IN-N-PAYER-COND-CODES      NOT EQUAL                      COB09890
+                                       OUT-N-PAYER-COND-CODES           COB09900
+              MOVE 'N PAYR COND CD'        TO ACTUAL-FIELD-LABEL        COB09910
+                                            EXPECTED-FIELD-LABEL        COB09920
+              MOVE  IN-N-PAYER-COND-CODES  TO EXPECTED-FIELD            COB09930
+              MOVE OUT-N-PAYER-COND-CODES  TO ACTUAL-FIELD              COB09940
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB09950
+           IF IN-N-CLAIM-RETURN-CODE     NOT EQUAL                      COB09890
+                                       OUT-N-CLAIM-RETURN-CODE          COB09900
+              MOVE 'N CLM RET CODE'        TO ACTUAL-FIELD-LABEL        COB09910
+                                            EXPECTED-FIELD-LABEL        COB09920
+              MOVE  IN-N-CLAIM-RETURN-CODE TO EXPECTED-FIELD            COB09930
+              MOVE OUT-N-CLAIM-RETURN-CODE TO ACTUAL-FIELD              COB09940
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB09950
+       32999-EXIT. EXIT.                                                COB09960
+      *                                                                 COB09970
+       33000-COMPARE-O-REC.                                             COB09980
+           MOVE SPACES TO OUT-CLAIM-DATA.                               COB09990
+           MOVE 'O'    TO OUT-CLAIM-TYPE.                               COB10000
+           MOVE CLAIM-HOLD-ID-NUM      TO OUT-CLAIM-IDENT-NUMBER.       COB10010
+           MOVE CO-DX-ED-RET-X (01)    TO OUT-O-RVDX01-ED-RET.          COB10020
+           MOVE CO-DX-ED-RET-X (02)    TO OUT-O-RVDX02-ED-RET.          COB10030
+           MOVE CO-DX-ED-RET-X (03)    TO OUT-O-RVDX03-ED-RET.          COB10040
+           MOVE CO-DX-ED-RET-X (04)    TO OUT-O-PDX-ED-RET.             COB10050
+           MOVE CO-DX-ED-RET-X (05)    TO OUT-O-SDX01-ED-RET.           COB10060
+           MOVE CO-DX-ED-RET-X (06)    TO OUT-O-SDX02-ED-RET.           COB10060
+           MOVE CO-DX-ED-RET-X (07)    TO OUT-O-SDX03-ED-RET.           COB10060
+           MOVE CO-DX-ED-RET-X (08)    TO OUT-O-SDX04-ED-RET.           COB10060
+           MOVE CO-DX-ED-RET-X (09)    TO OUT-O-SDX05-ED-RET.           COB10060
+           IF IN-O-CLAIM-REC = OUT-O-CLAIM-REC                          COB10070
+              GO TO 33999-EXIT.                                         COB10080
+           IF MISMATCH-IND = 'N'                                        COB10090
+              MOVE 'Y' TO MISMATCH-IND                                  COB10100
+              MOVE CLAIM-OUTPUT-LAYOUT   TO PRINT-LINE                  COB10110
+              PERFORM 80000-WRITE        THRU 89999-EXIT.               COB10120
+           IF IN-O-RVDX01-ED-RET  NOT EQUAL OUT-O-RVDX01-ED-RET         COB10130
+              MOVE 'O RVDX1 EDIT '      TO ACTUAL-FIELD-LABEL           COB10140
+                                           EXPECTED-FIELD-LABEL         COB10150
+              MOVE  IN-O-RVDX01-ED-RET  TO EXPECTED-FIELD               COB10160
+              MOVE OUT-O-RVDX01-ED-RET  TO ACTUAL-FIELD                 COB10170
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10180
+           IF IN-O-RVDX02-ED-RET  NOT EQUAL OUT-O-RVDX02-ED-RET         COB10130
+              MOVE 'O RVDX2 EDIT '      TO ACTUAL-FIELD-LABEL           COB10140
+                                           EXPECTED-FIELD-LABEL         COB10150
+              MOVE  IN-O-RVDX02-ED-RET  TO EXPECTED-FIELD               COB10160
+              MOVE OUT-O-RVDX02-ED-RET  TO ACTUAL-FIELD                 COB10170
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10180
+           IF IN-O-RVDX03-ED-RET  NOT EQUAL OUT-O-RVDX03-ED-RET         COB10130
+              MOVE 'O RVDX3 EDIT '      TO ACTUAL-FIELD-LABEL           COB10140
+                                           EXPECTED-FIELD-LABEL         COB10150
+              MOVE  IN-O-RVDX03-ED-RET  TO EXPECTED-FIELD               COB10160
+              MOVE OUT-O-RVDX03-ED-RET  TO ACTUAL-FIELD                 COB10170
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10180
+           IF IN-O-PDX-ED-RET   NOT EQUAL OUT-O-PDX-ED-RET              COB10190
+              MOVE 'O PDX  EDIT  '      TO ACTUAL-FIELD-LABEL           COB10200
+                                         EXPECTED-FIELD-LABEL           COB10210
+              MOVE  IN-O-PDX-ED-RET     TO EXPECTED-FIELD               COB10220
+              MOVE OUT-O-PDX-ED-RET     TO ACTUAL-FIELD                 COB10230
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10240
+           IF IN-O-SDX01-ED-RET  NOT EQUAL OUT-O-SDX01-ED-RET           COB10250
+              MOVE 'O SDX01-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-O-SDX01-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-O-SDX01-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+           IF IN-O-SDX02-ED-RET  NOT EQUAL OUT-O-SDX02-ED-RET           COB10250
+              MOVE 'O SDX02-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-O-SDX02-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-O-SDX02-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+           IF IN-O-SDX03-ED-RET  NOT EQUAL OUT-O-SDX03-ED-RET           COB10250
+              MOVE 'O SDX03-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-O-SDX03-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-O-SDX03-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+           IF IN-O-SDX04-ED-RET  NOT EQUAL OUT-O-SDX04-ED-RET           COB10250
+              MOVE 'O SDX04-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-O-SDX04-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-O-SDX04-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+           IF IN-O-SDX05-ED-RET  NOT EQUAL OUT-O-SDX05-ED-RET           COB10250
+              MOVE 'O SDX05-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-O-SDX05-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-O-SDX05-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+       33999-EXIT. EXIT.                                                COB10430
+      *                                                                 COB10440
+       34000-COMPARE-P-REC.                                             COB10450
+           MOVE SPACES TO OUT-CLAIM-DATA.                               COB10460
+           MOVE 'P'    TO OUT-CLAIM-TYPE.                               COB10470
+           MOVE CLAIM-HOLD-ID-NUM      TO OUT-CLAIM-IDENT-NUMBER.       COB10480
+           MOVE CO-DX-ED-RET-X (10)    TO OUT-P-SDX06-ED-RET.           COB10490
+           MOVE CO-DX-ED-RET-X (11)    TO OUT-P-SDX07-ED-RET.           COB10500
+           MOVE CO-DX-ED-RET-X (12)    TO OUT-P-SDX08-ED-RET.           COB10510
+           MOVE CO-DX-ED-RET-X (13)    TO OUT-P-SDX09-ED-RET.           COB10520
+           MOVE CO-DX-ED-RET-X (14)    TO OUT-P-SDX10-ED-RET.           COB10530
+           MOVE CO-DX-ED-RET-X (15)    TO OUT-P-SDX11-ED-RET.           COB10500
+           MOVE CO-DX-ED-RET-X (16)    TO OUT-P-SDX12-ED-RET.           COB10510
+           MOVE CO-DX-ED-RET-X (17)    TO OUT-P-SDX13-ED-RET.           COB10520
+           MOVE CO-DX-ED-RET-X (18)    TO OUT-P-SDX14-ED-RET.           COB10530
+           IF IN-P-CLAIM-REC = OUT-P-CLAIM-REC                          COB10540
+              GO TO 34999-EXIT.                                         COB10550
+           IF MISMATCH-IND = 'N'                                        COB10560
+              MOVE 'Y' TO MISMATCH-IND                                  COB10570
+              MOVE CLAIM-OUTPUT-LAYOUT   TO PRINT-LINE                  COB10580
+              PERFORM 80000-WRITE        THRU 89999-EXIT.               COB10590
+           IF IN-P-SDX06-ED-RET  NOT EQUAL OUT-P-SDX06-ED-RET           COB10250
+              MOVE 'P SDX06-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-P-SDX06-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-P-SDX06-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+           IF IN-P-SDX07-ED-RET  NOT EQUAL OUT-P-SDX07-ED-RET           COB10250
+              MOVE 'P SDX07-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-P-SDX07-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-P-SDX07-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+           IF IN-P-SDX08-ED-RET  NOT EQUAL OUT-P-SDX08-ED-RET           COB10250
+              MOVE 'P SDX08-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-P-SDX08-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-P-SDX08-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+           IF IN-P-SDX09-ED-RET  NOT EQUAL OUT-P-SDX09-ED-RET           COB10250
+              MOVE 'P SDX09-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-P-SDX09-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-P-SDX09-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+           IF IN-P-SDX10-ED-RET  NOT EQUAL OUT-P-SDX10-ED-RET           COB10250
+              MOVE 'P SDX10-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-P-SDX10-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-P-SDX10-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+           IF IN-P-SDX11-ED-RET  NOT EQUAL OUT-P-SDX11-ED-RET           COB10250
+              MOVE 'P SDX11-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-P-SDX11-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-P-SDX11-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+           IF IN-P-SDX12-ED-RET  NOT EQUAL OUT-P-SDX12-ED-RET           COB10250
+              MOVE 'P SDX12-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-P-SDX12-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-P-SDX12-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+           IF IN-P-SDX13-ED-RET  NOT EQUAL OUT-P-SDX13-ED-RET           COB10250
+              MOVE 'P SDX11-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-P-SDX13-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-P-SDX13-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+           IF IN-P-SDX14-ED-RET  NOT EQUAL OUT-P-SDX14-ED-RET           COB10250
+              MOVE 'P SDX11-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-P-SDX14-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-P-SDX14-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+       34999-EXIT. EXIT.                                                COB10900
+      *                                                                 COB10910
+       35000-COMPARE-Q-REC.                                             COB10920
+           MOVE SPACES TO OUT-CLAIM-DATA.                               COB10930
+           MOVE 'Q'    TO OUT-CLAIM-TYPE.                               COB10940
+           MOVE CLAIM-HOLD-ID-NUM      TO OUT-CLAIM-IDENT-NUMBER.       COB10950
+           MOVE CO-DX-ED-RET-X (19)    TO OUT-Q-SDX15-ED-RET.           COB10960
+           MOVE CO-DX-ED-RET-X (20)    TO OUT-Q-SDX16-ED-RET.           COB10970
+           MOVE CO-DX-ED-RET-X (21)    TO OUT-Q-SDX17-ED-RET.           COB10980
+           MOVE CO-DX-ED-RET-X (22)    TO OUT-Q-SDX18-ED-RET.           COB10990
+           MOVE CO-DX-ED-RET-X (23)    TO OUT-Q-SDX19-ED-RET.           COB11000
+           MOVE CO-DX-ED-RET-X (24)    TO OUT-Q-SDX20-ED-RET.           COB11000
+           MOVE CO-DX-ED-RET-X (25)    TO OUT-Q-SDX21-ED-RET.           COB10980
+           MOVE CO-DX-ED-RET-X (26)    TO OUT-Q-SDX22-ED-RET.           COB10990
+           MOVE CO-DX-ED-RET-X (27)    TO OUT-Q-SDX23-ED-RET.           COB11000
+           MOVE CO-DX-ED-RET-X (28)    TO OUT-Q-SDX24-ED-RET.           COB11000
+           IF IN-Q-CLAIM-REC = OUT-Q-CLAIM-REC                          COB11010
+              GO TO 35999-EXIT.                                         COB11020
+           IF MISMATCH-IND = 'N'                                        COB11030
+              MOVE 'Y' TO MISMATCH-IND                                  COB11040
+              MOVE CLAIM-OUTPUT-LAYOUT   TO PRINT-LINE                  COB11050
+              PERFORM 80000-WRITE        THRU 89999-EXIT.               COB11060
+           IF IN-Q-SDX15-ED-RET  NOT EQUAL OUT-Q-SDX15-ED-RET           COB10250
+              MOVE 'Q SDX15-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-Q-SDX15-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-Q-SDX15-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+           IF IN-Q-SDX16-ED-RET  NOT EQUAL OUT-Q-SDX16-ED-RET           COB10250
+              MOVE 'Q SDX16-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-Q-SDX16-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-Q-SDX16-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+           IF IN-Q-SDX17-ED-RET  NOT EQUAL OUT-Q-SDX17-ED-RET           COB10250
+              MOVE 'Q SDX17-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-Q-SDX17-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-Q-SDX17-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+           IF IN-Q-SDX18-ED-RET  NOT EQUAL OUT-Q-SDX18-ED-RET           COB10250
+              MOVE 'Q SDX18-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-Q-SDX18-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-Q-SDX18-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+           IF IN-Q-SDX19-ED-RET  NOT EQUAL OUT-Q-SDX19-ED-RET           COB10250
+              MOVE 'Q SDX19-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-Q-SDX19-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-Q-SDX19-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+           IF IN-Q-SDX20-ED-RET  NOT EQUAL OUT-Q-SDX20-ED-RET           COB10250
+              MOVE 'Q SDX20-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-Q-SDX20-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-Q-SDX20-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+           IF IN-Q-SDX21-ED-RET  NOT EQUAL OUT-Q-SDX21-ED-RET           COB10250
+              MOVE 'Q SDX21-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-Q-SDX21-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-Q-SDX21-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+           IF IN-Q-SDX22-ED-RET  NOT EQUAL OUT-Q-SDX22-ED-RET           COB10250
+              MOVE 'Q SDX22-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-Q-SDX22-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-Q-SDX22-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+           IF IN-Q-SDX23-ED-RET  NOT EQUAL OUT-Q-SDX23-ED-RET           COB10250
+              MOVE 'Q SDX23-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-Q-SDX23-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-Q-SDX23-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+           IF IN-Q-SDX24-ED-RET  NOT EQUAL OUT-Q-SDX24-ED-RET           COB10250
+              MOVE 'Q SDX24-EDIT '      TO ACTUAL-FIELD-LABEL           COB10260
+                                           EXPECTED-FIELD-LABEL         COB10270
+              MOVE  IN-Q-SDX24-ED-RET   TO EXPECTED-FIELD               COB10280
+              MOVE OUT-Q-SDX24-ED-RET   TO ACTUAL-FIELD                 COB10290
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB10300
+       35999-EXIT. EXIT.                                                COB11370
+      *                                                                 COB11380
+       36000-COMPARE-R-REC.                                             COB11390
+           MOVE SPACES TO OUT-CLAIM-DATA.                               COB11400
+           ADD 1 TO WS-SUB2.                                            COB11410
+           IF WS-SUB2 > MAX-LINE-ITEM-CNT                               COB11420
+              GO TO 36999-EXIT.                                         COB11430
+           MOVE 'R'    TO OUT-CLAIM-TYPE.                               COB11440
+           MOVE CLAIM-HOLD-ID-NUM            TO OUT-CLAIM-IDENT-NUMBER. COB11450
+           MOVE LNITM-HOLD-ID-NUM    (WS-SUB2) TO OUT-R-LNITM-ID-NUM.   COB11460
+           MOVE CO-APC-PAY-APC-ASC   (WS-SUB2) TO OUT-R-APC-PAY-ASC.    COB11470
+           MOVE CO-APC-HCPCS-APC-ASC (WS-SUB2) TO OUT-R-HCPCS-APC-ASC.  COB11480
+           MOVE CO-APC-STATUS-IND    (WS-SUB2) TO OUT-R-STATUS-IND.     COB11490
+           MOVE CO-APC-PAY-IND       (WS-SUB2) TO OUT-R-PAY-IND.        COB11500
+           MOVE CO-APC-DISC-FORMULA  (WS-SUB2) TO OUT-R-DISC-FORMULA.   COB11510
+           MOVE CO-APC-DEN-REJ-FLAG  (WS-SUB2) TO OUT-R-DEN-REJ-FLAG.   COB11520
+           MOVE CO-APC-PACK-FLAG     (WS-SUB2) TO OUT-R-PACK-FLAG.      COB11530
+           MOVE CO-APC-PAY-ADJ-FLAG1 (WS-SUB2) TO OUT-R-PAY-ADJ-FLAG1.  COB11540
+           MOVE CO-APC-PAY-METHD-FLAG(WS-SUB2) TO OUT-R-PAY-METHD-FLAG. COB11550
+           MOVE CO-APC-SERV-UNITS    (WS-SUB2) TO OUT-R-SERV-UNITS.     COB11560
+           MOVE CO-SG-ED-RET-X       (WS-SUB2) TO OUT-R-SG-ED-RET-X.    COB11570
+           MOVE CI-PROCEDURE-CODE    (WS-SUB2) TO OUT-R-HCPCS-SG-CODE.  COB11580
+           MOVE CO-APC-LIN-ITEM-FLAG (WS-SUB2) TO                       COB11590
+                                       OUT-R-LIN-ITEM-ACTION-FLAG.      COB11600
+           MOVE CO-COMPOSITE-ADJ-FLAG       (WS-SUB2) TO                COB11590
+                                       OUT-R-COMPOSITE-ADJ-FLAG.        COB11600
+           MOVE CO-HCPCS-MODIFIER    (WS-SUB2) TO
+                                               OUT-R-HCPCS-MODIFIER.
+           MOVE CO-APC-PAY-ADJ-FLAG2 (WS-SUB2) TO OUT-R-PAY-ADJ-FLAG2.  COB11540
+           IF IN-R-CLAIM-REC = OUT-R-CLAIM-REC                          COB11610
+              GO TO 36999-EXIT.                                         COB11620
+           IF MISMATCH-IND = 'N'                                        COB11630
+              MOVE 'Y' TO MISMATCH-IND                                  COB11640
+              MOVE CLAIM-OUTPUT-LAYOUT   TO PRINT-LINE                  COB11650
+              PERFORM 80000-WRITE        THRU 89999-EXIT.               COB11660
+           IF IN-R-HOLD-AREA    NOT EQUAL OUT-R-HOLD-AREA               COB11670
+              MOVE 'R APC FLAGS  '    TO ACTUAL-FIELD-LABEL             COB11680
+                                         EXPECTED-FIELD-LABEL           COB11690
+              MOVE IN-R-HOLD-AREA     TO EXPECTED-FIELD                 COB11700
+              MOVE OUT-R-HOLD-AREA    TO ACTUAL-FIELD                   COB11710
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB11720
+           IF IN-R-SG-ED-RET-X  NOT EQUAL OUT-R-SG-ED-RET-X             COB11730
+              MOVE 'R SG-EDIT    '    TO ACTUAL-FIELD-LABEL             COB11740
+                                         EXPECTED-FIELD-LABEL           COB11750
+              MOVE IN-R-SG-ED-RET-X   TO EXPECTED-FIELD                 COB11760
+              MOVE OUT-R-SG-ED-RET-X  TO ACTUAL-FIELD                   COB11770
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB11780
+           IF IN-R-HCPCS-SG-CODE NOT EQUAL OUT-R-HCPCS-SG-CODE          COB11790
+              MOVE 'R SG-CODE    '     TO ACTUAL-FIELD-LABEL            COB11800
+                                        EXPECTED-FIELD-LABEL            COB11810
+              MOVE  IN-R-HCPCS-SG-CODE TO EXPECTED-FIELD                COB11820
+              MOVE OUT-R-HCPCS-SG-CODE TO ACTUAL-FIELD                  COB11830
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB11840
+           IF IN-R-LIN-ITEM-ACTION-FLAG NOT EQUAL                       COB11850
+                                         OUT-R-LIN-ITEM-ACTION-FLAG     COB11850
+              MOVE 'R LNITEM FLAG'            TO ACTUAL-FIELD-LABEL     COB11860
+                                               EXPECTED-FIELD-LABEL     COB11870
+              MOVE  IN-R-LIN-ITEM-ACTION-FLAG TO EXPECTED-FIELD         COB11880
+              MOVE OUT-R-LIN-ITEM-ACTION-FLAG TO ACTUAL-FIELD           COB11890
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB11900
+           IF IN-R-COMPOSITE-ADJ-FLAG   NOT EQUAL                       COB11850
+                                         OUT-R-COMPOSITE-ADJ-FLAG       COB11850
+              MOVE 'R COMPST FLAG'            TO ACTUAL-FIELD-LABEL     COB11860
+                                               EXPECTED-FIELD-LABEL     COB11870
+              MOVE  IN-R-COMPOSITE-ADJ-FLAG   TO EXPECTED-FIELD         COB11880
+              MOVE OUT-R-COMPOSITE-ADJ-FLAG   TO ACTUAL-FIELD           COB11890
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB11900
+           IF IN-R-HCPCS-MODIFIER       NOT EQUAL                       COB11850
+                                         OUT-R-HCPCS-MODIFIER           COB11850
+              MOVE 'R HCPCS MOD  '            TO ACTUAL-FIELD-LABEL     COB11860
+                                               EXPECTED-FIELD-LABEL     COB11870
+              MOVE  IN-R-HCPCS-MODIFIER       TO EXPECTED-FIELD         COB11880
+              MOVE OUT-R-HCPCS-MODIFIER       TO ACTUAL-FIELD           COB11890
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB11900
+           IF  IN-R-PAY-ADJ-FLAG2       NOT EQUAL                       COB11850
+                                         OUT-R-PAY-ADJ-FLAG2            COB11850
+              MOVE 'R HCPCS MOD  '            TO ACTUAL-FIELD-LABEL     COB11860
+                                               EXPECTED-FIELD-LABEL     COB11870
+              MOVE  IN-R-PAY-ADJ-FLAG2        TO EXPECTED-FIELD         COB11880
+              MOVE OUT-R-PAY-ADJ-FLAG2        TO ACTUAL-FIELD           COB11890
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB11900
+       36999-EXIT. EXIT.                                                COB11910
+      *                                                                 COB11920
+       37000-COMPARE-S-REC.                                             COB11930
+           IF WS-SUB2 > MAX-LINE-ITEM-CNT                               COB11940
+              GO TO 37999-EXIT.                                         COB11950
+           MOVE SPACES TO OUT-CLAIM-DATA.                               COB11960
+           MOVE 'S'                        TO OUT-CLAIM-TYPE.           COB11970
+           MOVE CLAIM-HOLD-ID-NUM          TO OUT-CLAIM-IDENT-NUMBER.   COB11980
+           MOVE LNITM-HOLD-ID-NUM(WS-SUB2) TO OUT-S-LNITM-ID-NUM.       COB11990
+           MOVE CO-MOD-ED-RET-X  (WS-SUB2) TO OUT-S-MOD-ED-RET-X.       COB12000
+           MOVE CO-DTE-ED-RET-X  (WS-SUB2) TO OUT-S-DTE-ED-RET-X.       COB12010
+           MOVE CO-REV-ED-RET-X  (WS-SUB2) TO OUT-S-REV-ED-RET-X.       COB12020
+           MOVE CI-CHARGES-X     (WS-SUB2) TO OUT-S-APC-CHARGES-X.      COB12030
+           IF IN-S-CLAIM-REC = OUT-S-CLAIM-REC                          COB12040
+              GO TO 37999-EXIT.                                         COB12050
+           IF MISMATCH-IND = 'N'                                        COB12060
+              MOVE 'Y' TO MISMATCH-IND                                  COB12070
+              MOVE CLAIM-OUTPUT-LAYOUT   TO PRINT-LINE                  COB12080
+              PERFORM 80000-WRITE        THRU 89999-EXIT.               COB12090
+           IF IN-S-LNITM-ID-NUM NOT EQUAL OUT-S-LNITM-ID-NUM            COB12100
+              MOVE 'S LI-ID-NUMBR'    TO ACTUAL-FIELD-LABEL             COB12110
+                                         EXPECTED-FIELD-LABEL           COB12120
+              MOVE IN-S-LNITM-ID-NUM  TO EXPECTED-FIELD                 COB12130
+              MOVE OUT-S-LNITM-ID-NUM TO ACTUAL-FIELD                   COB12140
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB12150
+           IF IN-S-MOD-ED-RET-X NOT EQUAL OUT-S-MOD-ED-RET-X            COB12160
+              MOVE 'S MODFR EDIT '    TO ACTUAL-FIELD-LABEL             COB12170
+                                         EXPECTED-FIELD-LABEL           COB12180
+              MOVE IN-S-MOD-ED-RET-X  TO EXPECTED-FIELD                 COB12190
+              MOVE OUT-S-MOD-ED-RET-X TO ACTUAL-FIELD                   COB12200
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB12210
+           IF IN-S-DTE-ED-RET-X NOT EQUAL OUT-S-DTE-ED-RET-X            COB12220
+              MOVE 'S DATE EDIT  '    TO ACTUAL-FIELD-LABEL             COB12230
+                                         EXPECTED-FIELD-LABEL           COB12240
+              MOVE IN-S-DTE-ED-RET-X  TO EXPECTED-FIELD                 COB12250
+              MOVE OUT-S-DTE-ED-RET-X TO ACTUAL-FIELD                   COB12260
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB12270
+           IF IN-S-REV-ED-RET-X NOT EQUAL OUT-S-REV-ED-RET-X            COB12280
+              MOVE 'S REVCD EDIT '    TO ACTUAL-FIELD-LABEL             COB12290
+                                         EXPECTED-FIELD-LABEL           COB12300
+              MOVE IN-S-REV-ED-RET-X  TO EXPECTED-FIELD                 COB12310
+              MOVE OUT-S-REV-ED-RET-X TO ACTUAL-FIELD                   COB12320
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB12330
+           IF IN-S-APC-CHARGES-X NOT EQUAL OUT-S-APC-CHARGES-X          COB12340
+              MOVE 'S CHARGES    '     TO ACTUAL-FIELD-LABEL            COB12350
+                                          EXPECTED-FIELD-LABEL          COB12360
+              MOVE  IN-S-APC-CHARGES-X TO EXPECTED-FIELD                COB12370
+              MOVE OUT-S-APC-CHARGES-X TO ACTUAL-FIELD                  COB12380
+              PERFORM 70000-WRITE        THRU 79999-EXIT.               COB12390
+       37999-EXIT. EXIT.                                                COB12400
+      *                                                                 COB12410
+       39999-EXIT. EXIT.                                                COB12420
+      *                                                                 COB12430
+      ******************************************************            COB12440
+      * WRITE NON MATCHING RECORDS                         *            COB12450
+      ******************************************************            COB12460
+       70000-WRITE.                                                     COB12470
+           WRITE PRINT-LINE FROM EXPECTED-LAYOUT.                       COB12480
+           WRITE PRINT-LINE FROM   ACTUAL-LAYOUT.                       COB12490
+       79999-EXIT. EXIT.                                                COB12500
+      *                                                                 COB12510
+      ******************************************************            COB12520
+      * WRITE RECORDS                                      *            COB12530
+      ******************************************************            COB12540
+       80000-WRITE.                                                     COB12550
+           WRITE PRINT-LINE.                                            COB12560
+       89999-EXIT. EXIT.                                                COB12570
+      *                                                                 COB12580
+      ******************************************************            COB12590
+      * INITIALIZE                                         *            COB12600
+      ******************************************************            COB12610
+       90000-INITIALIZE.                                                COB12620
+           MOVE SPACES TO WS-INTERFACE-AREA-1 WS-INTERFACE-AREA-2.      COB12630
+           MOVE ZEROS  TO WS-SUB1 WS-SUB2 L-REC-CNT.                    COB12650
+           IF MISMATCH-IND = 'Y'
+              ADD 1 TO TOT-MIS-CLAIM-CNT.
+           MOVE 'N'    TO MISMATCH-IND.                                 COB12660
+       99999-EXIT. EXIT.                                                COB12670
